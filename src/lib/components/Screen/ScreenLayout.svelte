@@ -6,13 +6,40 @@
 	import { dataService } from '$lib/services';
 	import { onDestroy } from 'svelte';
 
-	export let layout: 'top' | 'side' | 'side-right' = 'side';
+	type LayoutOption = 'top' | 'side' | 'side-right';
+
+	export let layout: LayoutOption = 'side';
 	export let currentTalk: Talk | null = null;
 	export let nextTalk: Talk | null = null;
 	export let eventName: string = '';
 
 	let slideState: SlideState = { talkId: '', currentPage: 1 };
 	let unsubscribeSlide: () => void;
+
+	const layoutClasses: Record<LayoutOption, { container: string; info: string; slide: string; comment: string }> =
+		{
+			top: {
+				container: 'grid-cols-1 grid-rows-[auto_1fr_220px]',
+				info: 'col-span-1 row-start-1',
+				slide: 'col-span-1 row-start-2',
+				comment: 'col-span-1 row-start-3'
+			},
+			side: {
+				container: 'grid-cols-1 grid-rows-[auto_1fr_220px] md:grid-cols-[340px_1fr] md:grid-rows-[auto_1fr]',
+				info: 'col-span-1 row-start-1 md:col-start-1 md:row-start-1',
+				slide: 'col-span-1 row-start-2 md:col-start-2 md:row-span-2 md:row-start-1',
+				comment: 'col-span-1 row-start-3 md:col-start-1 md:row-start-2'
+			},
+			'side-right': {
+				container: 'grid-cols-1 grid-rows-[auto_1fr_220px] md:grid-cols-[1fr_340px] md:grid-rows-[auto_1fr]',
+				info: 'col-span-1 row-start-1 md:col-start-2 md:row-start-1',
+				slide: 'col-span-1 row-start-2 md:col-start-1 md:row-span-2 md:row-start-1',
+				comment: 'col-span-1 row-start-3 md:col-start-2 md:row-start-2'
+			}
+		};
+
+	let layoutConfig = layoutClasses[layout];
+	$: layoutConfig = layoutClasses[layout];
 
 	$: if (currentTalk) {
 		if (unsubscribeSlide) unsubscribeSlide();
@@ -49,214 +76,64 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="screen-container layout-{layout}">
-	<!-- Header / Info Area -->
-	<div class="info-area">
-		<div class="event-title">{eventName}</div>
+<div class={`grid min-h-screen w-screen gap-4 bg-slate-950 p-4 text-white ${layoutConfig.container}`}>
+	<div class={`rounded-xl bg-slate-800/70 p-4 shadow-lg shadow-black/30 ${layoutConfig.info}`}>
+		<div class="text-sm uppercase tracking-[0.1em] text-slate-400">{eventName}</div>
 		{#if currentTalk}
-			<div class="current-talk">
-				<div class="label">Now Speaking</div>
-				<div class="speaker-name">{currentTalk.name}</div>
-				<div class="talk-title">{currentTalk.title}</div>
+			<div class="mt-2 space-y-1">
+				<div class="text-xs uppercase tracking-[0.1em] text-slate-500">Now Speaking</div>
+				<div class="text-2xl font-bold text-sky-400">{currentTalk.name}</div>
+				<div class="text-base text-slate-200">{currentTalk.title}</div>
 			</div>
 		{:else}
-			<div class="waiting">待機中...</div>
+			<div class="mt-4 text-slate-500">待機中...</div>
 		{/if}
 
-		<div class="timer-wrapper">
+		<div class="mt-4 rounded-lg bg-slate-900/80 px-3 py-2">
 			<Timer />
 		</div>
 
 		{#if nextTalk}
-			<div class="next-talk">
-				<div class="label">Next</div>
-				<div>{nextTalk.name}</div>
+			<div class="mt-4 border-t border-slate-700 pt-3 text-slate-300">
+				<div class="text-xs uppercase tracking-[0.1em] text-slate-500">Next</div>
+				<div class="text-sm">{nextTalk.name}</div>
 			</div>
 		{/if}
 	</div>
 
-	<!-- Slide Area -->
-	<div class="slide-area">
+	<div class={`group relative overflow-hidden rounded-xl bg-black shadow-2xl shadow-black/50 ${layoutConfig.slide}`}>
 		{#if currentTalk && currentTalk.slideUrl}
 			<SlideViewer url={currentTalk.slideUrl} page={slideState.currentPage} />
-			<!-- Overlay Controls (Visible on hover) -->
-			<div class="slide-controls-overlay">
-				<button class="overlay-btn prev" on:click={prevPage} disabled={slideState.currentPage <= 1}
-					>&lt;</button
+			<div class="pointer-events-none absolute inset-x-0 bottom-4 flex items-center justify-center gap-4 rounded-full bg-black/50 px-4 py-2 opacity-0 transition duration-200 group-hover:opacity-100">
+				<button
+					class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-lg font-semibold text-white transition hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+					on:click={prevPage}
+					disabled={slideState.currentPage <= 1}
+					aria-label="前のページ"
 				>
-				<div class="page-indicator">{slideState.currentPage}</div>
-				<button class="overlay-btn next" on:click={nextPage}>&gt;</button>
+					&lt;
+				</button>
+				<div class="min-w-[44px] text-center text-lg font-semibold">{slideState.currentPage}</div>
+				<button
+					class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-lg font-semibold text-white transition hover:bg-white/30"
+					on:click={nextPage}
+					aria-label="次のページ"
+				>
+					&gt;
+				</button>
 			</div>
 		{:else}
-			<div class="no-slide">
+			<div class="flex h-full items-center justify-center text-slate-500">
 				<p>スライドが表示されます</p>
 			</div>
 		{/if}
 	</div>
 
-	<!-- Comment Area -->
-	<div class="comment-area">
+	<div class={`overflow-hidden rounded-xl bg-slate-800/70 shadow-lg shadow-black/30 ${layoutConfig.comment}`}>
 		{#if currentTalk}
 			<CommentTimeline talkId={currentTalk.id} />
 		{:else}
-			<div class="comment-placeholder">コメントエリア</div>
+			<div class="flex h-full items-center justify-center text-slate-500">コメントエリア</div>
 		{/if}
 	</div>
 </div>
-
-<style>
-	.screen-container {
-		width: 100vw;
-		height: 100vh;
-		background: #0f172a;
-		color: white;
-		display: grid;
-		gap: 16px;
-		padding: 16px;
-		box-sizing: border-box;
-	}
-
-	/* Layout: Top */
-	.layout-top {
-		grid-template-areas:
-			'info'
-			'slide'
-			'comment';
-		grid-template-rows: auto 1fr 200px;
-		grid-template-columns: 1fr;
-	}
-	.layout-top .info-area {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	/* Layout: Side (Left Info) */
-	.layout-side {
-		grid-template-areas:
-			'info slide'
-			'comment slide';
-		grid-template-columns: 350px 1fr;
-		grid-template-rows: auto 1fr;
-	}
-	.layout-side .info-area {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-
-	/* Layout: Side Right (Right Info) */
-	.layout-side-right {
-		grid-template-areas:
-			'slide info'
-			'slide comment';
-		grid-template-columns: 1fr 350px;
-		grid-template-rows: auto 1fr;
-	}
-
-	.info-area {
-		grid-area: info;
-		background: #1e293b;
-		padding: 16px;
-		border-radius: 12px;
-	}
-	.slide-area {
-		grid-area: slide;
-		background: #000;
-		border-radius: 12px;
-		overflow: hidden;
-		position: relative;
-	}
-	.comment-area {
-		grid-area: comment;
-		background: #1e293b;
-		border-radius: 12px;
-		overflow: hidden;
-	}
-
-	.event-title {
-		font-size: 1.2rem;
-		color: #94a3b8;
-		margin-bottom: 8px;
-	}
-	.label {
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		color: #64748b;
-		letter-spacing: 0.05em;
-	}
-	.speaker-name {
-		font-size: 2rem;
-		font-weight: bold;
-		color: #38bdf8;
-	}
-	.talk-title {
-		font-size: 1.2rem;
-		margin-bottom: 16px;
-	}
-	.next-talk {
-		margin-top: 16px;
-		border-top: 1px solid #334155;
-		padding-top: 8px;
-		color: #94a3b8;
-	}
-
-	.no-slide {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #475569;
-	}
-	.comment-placeholder {
-		padding: 20px;
-		text-align: center;
-		color: #475569;
-	}
-
-	.slide-controls-overlay {
-		position: absolute;
-		bottom: 20px;
-		left: 50%;
-		transform: translateX(-50%);
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		background: rgba(0, 0, 0, 0.5);
-		padding: 8px 16px;
-		border-radius: 24px;
-		opacity: 0;
-		transition: opacity 0.2s;
-	}
-	.slide-area:hover .slide-controls-overlay {
-		opacity: 1;
-	}
-	.overlay-btn {
-		background: rgba(255, 255, 255, 0.2);
-		border: none;
-		color: white;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		font-size: 1.2rem;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: background 0.2s;
-	}
-	.overlay-btn:hover {
-		background: rgba(255, 255, 255, 0.4);
-	}
-	.overlay-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-	.page-indicator {
-		font-weight: bold;
-		font-size: 1.2rem;
-		min-width: 30px;
-		text-align: center;
-	}
-</style>

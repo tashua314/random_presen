@@ -2,326 +2,156 @@
 	import { resolve } from '$app/paths';
 </script>
 
-<div class="landing-page">
-	<header>
-		<h1>🎤 LT Realtime Screen App</h1>
-		<p class="subtitle">LT（Lightning Talk）イベント用のリアルタイム画面表示システム</p>
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-6 py-10 text-slate-100">
+	<header class="mx-auto mb-12 flex max-w-5xl flex-col items-center gap-3 text-center">
+		<h1 class="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl">
+			🎤 LT Realtime Screen App
+		</h1>
+		<p class="text-lg text-slate-400 md:text-xl">LT（Lightning Talk）イベント用のリアルタイム画面表示システム</p>
 	</header>
 
-	<main>
-		<section class="intro">
-			<h2>このアプリでできること</h2>
-			<p>
+	<main class="mx-auto flex max-w-6xl flex-col gap-12">
+		<section class="flex flex-col items-center gap-4 text-center">
+			<h2 class="text-3xl font-semibold text-slate-200">このアプリでできること</h2>
+			<p class="max-w-3xl text-lg leading-relaxed text-slate-300">
 				LT Realtime Screen
 				Appは、ライトニングトークイベントをスムーズに進行するための総合システムです。
 				スライド表示、コメント投稿、リモート操作など、イベント運営に必要な機能をすべて備えています。
 			</p>
 		</section>
 
-		<section class="features">
-			<div class="feature-card">
-				<div class="icon">⚙️</div>
-				<h3>管理画面</h3>
-				<p>プレゼンテーション情報の登録・編集・順番管理を行います。</p>
-				<ul>
+		<section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+			<div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30 backdrop-blur-lg transition duration-200 hover:-translate-y-1 hover:bg-white/10">
+				<div class="text-4xl">⚙️</div>
+				<h3 class="text-xl font-semibold text-slate-100">管理画面</h3>
+				<p class="text-slate-300">プレゼンテーション情報の登録・編集・順番管理を行います。</p>
+				<ul class="list-disc space-y-1 pl-5 text-sm leading-6 text-slate-400">
 					<li>発表者情報とスライドURLの登録</li>
 					<li>発表順序のドラッグ&ドロップ変更</li>
 					<li>リモート操作URLとコメントURLのコピー</li>
 					<li>スライドの操作（Prev/Next）</li>
 				</ul>
-				<a href={resolve('/admin')} class="btn btn-primary">管理画面を開く</a>
+				<a
+					href={resolve('/admin')}
+					class="mt-2 inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:scale-105"
+				>
+					管理画面を開く
+				</a>
 			</div>
 
-			<div class="feature-card">
-				<div class="icon">📺</div>
-				<h3>スクリーン画面</h3>
-				<p>プロジェクターに映す画面です。リアルタイムでスライドとコメントが表示されます。</p>
-				<ul>
+			<div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30 backdrop-blur-lg transition duration-200 hover:-translate-y-1 hover:bg-white/10">
+				<div class="text-4xl">📺</div>
+				<h3 class="text-xl font-semibold text-slate-100">スクリーン画面</h3>
+				<p class="text-slate-300">プロジェクターに映す画面です。リアルタイムでスライドとコメントが表示されます。</p>
+				<ul class="list-disc space-y-1 pl-5 text-sm leading-6 text-slate-400">
 					<li>PDFスライドの表示</li>
 					<li>リアルタイムコメント表示</li>
 					<li>発表者情報とタイマー</li>
 					<li>キーボード/マウスでのスライド操作</li>
 				</ul>
-				<a href={resolve('/screen')} class="btn btn-secondary" target="_blank" rel="external"
-					>スクリーン画面を開く</a
+				<a
+					href={resolve('/screen')}
+					class="mt-2 inline-flex items-center justify-center rounded-lg border border-slate-600/70 bg-slate-800/60 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-400 hover:bg-slate-700/60"
+					target="_blank"
+					rel="external"
 				>
+					スクリーン画面を開く
+				</a>
 			</div>
 
-			<div class="feature-card">
-				<div class="icon">🎮</div>
-				<h3>リモート操作</h3>
-				<p>発表者がスマホやタブレットからスライドを操作できます。</p>
-				<ul>
+			<div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30 backdrop-blur-lg transition duration-200 hover:-translate-y-1 hover:bg-white/10">
+				<div class="text-4xl">🎮</div>
+				<h3 class="text-xl font-semibold text-slate-100">リモート操作</h3>
+				<p class="text-slate-300">発表者がスマホやタブレットからスライドを操作できます。</p>
+				<ul class="list-disc space-y-1 pl-5 text-sm leading-6 text-slate-400">
 					<li>大きなボタンでスライド送り</li>
 					<li>現在のページ数表示</li>
 					<li>リアルタイム同期</li>
 				</ul>
-				<p class="note">※ 管理画面で各発表のURLをコピーして発表者に共有してください</p>
+				<p class="text-sm italic text-slate-500">※ 管理画面で各発表のURLをコピーして発表者に共有してください</p>
 			</div>
 
-			<div class="feature-card">
-				<div class="icon">💬</div>
-				<h3>コメント投稿</h3>
-				<p>聴衆がリアルタイムでコメントや質問を送信できます。</p>
-				<ul>
+			<div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30 backdrop-blur-lg transition duration-200 hover:-translate-y-1 hover:bg-white/10">
+				<div class="text-4xl">💬</div>
+				<h3 class="text-xl font-semibold text-slate-100">コメント投稿</h3>
+				<p class="text-slate-300">聴衆がリアルタイムでコメントや質問を送信できます。</p>
+				<ul class="list-disc space-y-1 pl-5 text-sm leading-6 text-slate-400">
 					<li>ニックネーム付きでコメント投稿</li>
 					<li>スクリーン画面にリアルタイム表示</li>
 					<li>発表へのエンゲージメント向上</li>
 				</ul>
-				<p class="note">※ 管理画面で各発表のURLをコピーして聴衆に共有してください</p>
+				<p class="text-sm italic text-slate-500">※ 管理画面で各発表のURLをコピーして聴衆に共有してください</p>
 			</div>
 		</section>
 
-		<section class="getting-started">
-			<h2>使い方</h2>
-			<ol class="steps">
+		<section class="rounded-xl border border-sky-500/30 bg-sky-500/10 p-6 backdrop-blur lg:p-8">
+			<h2 class="text-2xl font-semibold text-slate-100">使い方</h2>
+			<ol class="mt-4 space-y-4">
 				<li>
-					<strong>管理画面</strong>で発表者情報とスライドURL（Google Driveの共有リンク等）を登録
+					<div class="flex items-start gap-4">
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">1</span>
+						<p class="flex-1 leading-7 text-slate-200">
+							<strong class="font-semibold text-white">管理画面</strong>で発表者情報とスライドURL（Google Driveの共有リンク等）を登録
+						</p>
+					</div>
 				</li>
-				<li><strong>スクリーン画面</strong>をプロジェクターに表示</li>
-				<li>各発表者に<strong>リモート操作URL</strong>を共有</li>
-				<li>聴衆に<strong>コメント投稿URL</strong>を共有（QRコードなどで）</li>
-				<li>管理画面で発表を開始（Play）して、イベントスタート！</li>
+				<li>
+					<div class="flex items-start gap-4">
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">2</span>
+						<p class="flex-1 leading-7 text-slate-200">
+							<strong class="font-semibold text-white">スクリーン画面</strong>をプロジェクターに表示
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class="flex items-start gap-4">
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">3</span>
+						<p class="flex-1 leading-7 text-slate-200">
+							各発表者に<strong class="font-semibold text-white">リモート操作URL</strong>を共有
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class="flex items-start gap-4">
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">4</span>
+						<p class="flex-1 leading-7 text-slate-200">
+							聴衆に<strong class="font-semibold text-white">コメント投稿URL</strong>を共有（QRコードなどで）
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class="flex items-start gap-4">
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">5</span>
+						<p class="flex-1 leading-7 text-slate-200">
+							管理画面で発表を開始（Play）して、イベントスタート！
+						</p>
+					</div>
+				</li>
 			</ol>
 		</section>
 
-		<section class="tech-stack">
-			<h3>技術スタック</h3>
-			<div class="tags">
-				<span class="tag">SvelteKit</span>
-				<span class="tag">TypeScript</span>
-				<span class="tag">Neon PostgreSQL</span>
-				<span class="tag">Drizzle ORM</span>
-				<span class="tag">PDF.js</span>
-				<span class="tag">Tailwind CSS</span>
+		<section class="text-center">
+			<h3 class="text-xl font-semibold text-slate-200">技術スタック</h3>
+			<div class="mt-3 flex flex-wrap justify-center gap-3">
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">SvelteKit</span>
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">TypeScript</span>
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">Neon PostgreSQL</span>
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">Drizzle ORM</span>
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">PDF.js</span>
+				<span class="rounded-full border border-sky-400/50 bg-sky-400/15 px-3 py-1 text-sm font-semibold text-sky-300">Tailwind CSS</span>
 			</div>
 		</section>
 	</main>
 
-	<footer>
-		<p>
-			<a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a> •
-			<a href={resolve('/admin')}>管理画面</a> •
-			<a href={resolve('/screen')} target="_blank" rel="external">スクリーン</a>
+	<footer class="mx-auto mt-14 max-w-5xl border-t border-white/10 pt-6 text-center text-sm text-slate-500">
+		<p class="space-x-3">
+			<a class="text-sky-300 transition hover:text-sky-200" href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+			<span class="text-white/30">•</span>
+			<a class="text-sky-300 transition hover:text-sky-200" href={resolve('/admin')}>管理画面</a>
+			<span class="text-white/30">•</span>
+			<a class="text-sky-300 transition hover:text-sky-200" href={resolve('/screen')} target="_blank" rel="external"
+				>スクリーン</a
+			>
 		</p>
 	</footer>
 </div>
-
-<style>
-	.landing-page {
-		min-height: 100vh;
-		background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-		color: #e2e8f0;
-		padding: 2rem;
-	}
-
-	header {
-		text-align: center;
-		margin-bottom: 3rem;
-	}
-
-	h1 {
-		font-size: 3rem;
-		margin: 0;
-		background: linear-gradient(135deg, #38bdf8, #3b82f6);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-	}
-
-	.subtitle {
-		font-size: 1.2rem;
-		color: #94a3b8;
-		margin-top: 0.5rem;
-	}
-
-	main {
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-
-	section {
-		margin-bottom: 3rem;
-	}
-
-	h2 {
-		font-size: 2rem;
-		margin-bottom: 1rem;
-		color: #cbd5e1;
-	}
-
-	h3 {
-		font-size: 1.5rem;
-		margin-bottom: 0.5rem;
-		color: #e2e8f0;
-	}
-
-	.intro p {
-		font-size: 1.1rem;
-		line-height: 1.8;
-		color: #cbd5e1;
-		max-width: 800px;
-		margin: 0 auto;
-		text-align: center;
-	}
-
-	.features {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 1.5rem;
-		margin-top: 2rem;
-	}
-
-	.feature-card {
-		background: rgba(255, 255, 255, 0.05);
-		border-radius: 12px;
-		padding: 1.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		transition: all 0.3s;
-	}
-
-	.feature-card:hover {
-		background: rgba(255, 255, 255, 0.08);
-		transform: translateY(-4px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-	}
-
-	.icon {
-		font-size: 3rem;
-		margin-bottom: 1rem;
-	}
-
-	.feature-card ul {
-		margin: 1rem 0;
-		padding-left: 1.5rem;
-		color: #94a3b8;
-		line-height: 1.8;
-	}
-
-	.feature-card li {
-		margin-bottom: 0.5rem;
-	}
-
-	.note {
-		font-size: 0.9rem;
-		color: #64748b;
-		font-style: italic;
-		margin-top: 1rem;
-	}
-
-	.btn {
-		display: inline-block;
-		padding: 0.75rem 1.5rem;
-		border-radius: 8px;
-		text-decoration: none;
-		font-weight: bold;
-		margin-top: 1rem;
-		transition: all 0.2s;
-	}
-
-	.btn-primary {
-		background: linear-gradient(135deg, #3b82f6, #2563eb);
-		color: white;
-	}
-
-	.btn-primary:hover {
-		transform: scale(1.05);
-		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-	}
-
-	.btn-secondary {
-		background: #334155;
-		color: #cbd5e1;
-	}
-
-	.btn-secondary:hover {
-		background: #475569;
-	}
-
-	.getting-started {
-		background: rgba(59, 130, 246, 0.1);
-		border-radius: 12px;
-		padding: 2rem;
-		border: 1px solid rgba(59, 130, 246, 0.2);
-	}
-
-	.steps {
-		list-style: none;
-		counter-reset: step-counter;
-		padding: 0;
-		max-width: 700px;
-		margin: 1.5rem auto 0;
-	}
-
-	.steps li {
-		counter-increment: step-counter;
-		margin-bottom: 1rem;
-		padding-left: 3rem;
-		position: relative;
-		line-height: 1.6;
-	}
-
-	.steps li::before {
-		content: counter(step-counter);
-		position: absolute;
-		left: 0;
-		top: 0;
-		background: #3b82f6;
-		color: white;
-		width: 2rem;
-		height: 2rem;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: bold;
-	}
-
-	.tech-stack {
-		text-align: center;
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		justify-content: center;
-		margin-top: 1rem;
-	}
-
-	.tag {
-		background: rgba(56, 189, 248, 0.2);
-		color: #38bdf8;
-		padding: 0.5rem 1rem;
-		border-radius: 20px;
-		font-size: 0.9rem;
-		border: 1px solid rgba(56, 189, 248, 0.3);
-	}
-
-	footer {
-		text-align: center;
-		margin-top: 4rem;
-		padding-top: 2rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		color: #64748b;
-	}
-
-	footer a {
-		color: #38bdf8;
-		text-decoration: none;
-	}
-
-	footer a:hover {
-		text-decoration: underline;
-	}
-
-	@media (max-width: 768px) {
-		h1 {
-			font-size: 2rem;
-		}
-
-		.features {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>

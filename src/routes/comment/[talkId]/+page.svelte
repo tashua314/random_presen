@@ -54,138 +54,53 @@
 	}
 </script>
 
-<div class="comment-page">
+<div class="flex min-h-screen flex-col items-center bg-slate-950 px-5 py-10 text-white">
 	{#if loading}
-		<div class="loading">Loading...</div>
+		<div class="text-slate-400">Loading...</div>
 	{:else if error}
-		<div class="error">{error}</div>
+		<div class="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">{error}</div>
 	{:else if talk}
-		<header>
-			<div class="label">Comment to</div>
-			<h1>{talk.name}</h1>
-			<p class="title">{talk.title}</p>
+		<header class="mb-10 flex flex-col items-center gap-2 text-center">
+			<div class="text-xs uppercase tracking-[0.12em] text-slate-500">Comment to</div>
+			<h1 class="text-3xl font-bold text-sky-400">{talk.name}</h1>
+			<p class="text-sm text-slate-400">{talk.title}</p>
 		</header>
 
-		<main>
-			<div class="form-group">
-				<label for="name">ニックネーム (任意)</label>
-				<input id="name" bind:value={displayName} placeholder="名無しさん" />
+		<main class="flex w-full max-w-md flex-col gap-5">
+			<div class="flex flex-col gap-2">
+				<label class="text-sm font-semibold text-slate-200" for="name">ニックネーム (任意)</label>
+				<input
+					id="name"
+					class="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+					bind:value={displayName}
+					placeholder="名無しさん"
+				/>
 			</div>
 
-			<div class="form-group">
-				<label for="message">コメント</label>
+			<div class="flex flex-col gap-2">
+				<label class="text-sm font-semibold text-slate-200" for="message">コメント</label>
 				<textarea
 					id="message"
+					class="min-h-[120px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
 					bind:value={message}
 					placeholder="応援コメントや質問を送ろう！"
 					rows="4"
 				></textarea>
 			</div>
 
-			<button class="btn-send" on:click={handleSubmit} disabled={!message.trim() || sending}>
+			<button
+				class="rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-lg font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+				on:click={handleSubmit}
+				disabled={!message.trim() || sending}
+			>
 				{sending ? '送信中...' : '送信する'}
 			</button>
 
 			{#if successMsg}
-				<div class="success">{successMsg}</div>
+				<div class="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-center text-emerald-200">
+					{successMsg}
+				</div>
 			{/if}
 		</main>
 	{/if}
 </div>
-
-<style>
-	.comment-page {
-		min-height: 100vh;
-		background: #0f172a;
-		color: white;
-		padding: 20px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-	header {
-		text-align: center;
-		margin-bottom: 30px;
-	}
-	.label {
-		color: #64748b;
-		font-size: 0.8rem;
-	}
-	h1 {
-		margin: 5px 0;
-		color: #38bdf8;
-	}
-	.title {
-		color: #94a3b8;
-		margin: 0;
-		font-size: 0.9rem;
-	}
-
-	main {
-		width: 100%;
-		max-width: 400px;
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-	label {
-		font-size: 0.9rem;
-		color: #cbd5e1;
-		font-weight: bold;
-	}
-
-	input,
-	textarea {
-		padding: 12px;
-		border-radius: 8px;
-		border: 1px solid #334155;
-		background: #1e293b;
-		color: white;
-		font-size: 1rem;
-	}
-	input:focus,
-	textarea:focus {
-		outline: 2px solid #3b82f6;
-		border-color: transparent;
-	}
-
-	.btn-send {
-		padding: 14px;
-		background: linear-gradient(135deg, #3b82f6, #2563eb);
-		color: white;
-		border: none;
-		border-radius: 8px;
-		font-weight: bold;
-		font-size: 1.1rem;
-		cursor: pointer;
-		margin-top: 10px;
-	}
-	.btn-send:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.success {
-		text-align: center;
-		color: #4ade80;
-		font-weight: bold;
-		animation: fade 3s forwards;
-	}
-	@keyframes fade {
-		0% {
-			opacity: 1;
-		}
-		80% {
-			opacity: 1;
-		}
-		100% {
-			opacity: 0;
-		}
-	}
-</style>

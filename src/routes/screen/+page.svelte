@@ -53,16 +53,5 @@
 {#if event}
 	<ScreenLayout {layout} eventName={event.name} {currentTalk} {nextTalk} />
 {:else}
-	<div class="loading">Loading...</div>
+	<div class="flex h-screen items-center justify-center bg-slate-950 text-white">Loading...</div>
 {/if}
-
-<style>
-	.loading {
-		color: white;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 100vh;
-		background: #0f172a;
-	}
-</style>

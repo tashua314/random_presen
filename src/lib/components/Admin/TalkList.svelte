@@ -47,11 +47,10 @@
 	}
 </script>
 
-<div class="talk-list">
+<div class="flex flex-col gap-2">
 	{#each talks as talk, index (talk.id)}
 		<div
-			class="talk-item"
-			class:active={talk.id === currentTalkId}
+			class={`flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 transition hover:bg-white/10 ${talk.id === currentTalkId ? 'border-sky-400 bg-sky-500/10' : ''}`}
 			draggable="true"
 			role="listitem"
 			on:dragstart={() => handleDragStart(index)}
@@ -59,109 +58,44 @@
 			on:drop={handleDrop}
 			animate:flip={{ duration: 200 }}
 		>
-			<div class="drag-handle">⋮⋮</div>
-			<div class="info">
-				<div class="name">{talk.name}</div>
-				<div class="title">{talk.title}</div>
+			<div class="cursor-grab text-lg text-slate-500">⋮⋮</div>
+			<div class="flex-1">
+				<div class="font-semibold text-slate-100">{talk.name}</div>
+				<div class="text-sm text-slate-400">{talk.title}</div>
 			</div>
-			<div class="actions">
+			<div class="flex items-center gap-2">
 				{#if talk.id === currentTalkId}
-					<span class="badge-live">LIVE</span>
+					<span class="rounded bg-red-500 px-2 py-1 text-xs font-bold text-white">LIVE</span>
 				{:else}
-					<button class="btn-play" on:click={() => handlePlay(talk.id)}>Play</button>
+					<button
+						class="rounded-md bg-sky-400 px-3 py-1 text-sm font-semibold text-slate-900 transition hover:bg-sky-300"
+						on:click={() => handlePlay(talk.id)}
+					>
+						Play
+					</button>
 				{/if}
-				<button class="btn-icon" on:click={() => dispatch('edit', talk)} title="Edit">✎</button>
 				<button
-					class="btn-icon"
+					class="rounded-md px-2 py-1 text-base text-slate-400 transition hover:bg-white/10 hover:text-sky-300"
+					on:click={() => dispatch('edit', talk)}
+					title="Edit">✎</button
+				>
+				<button
+					class="rounded-md px-2 py-1 text-base text-slate-400 transition hover:bg-white/10 hover:text-sky-300"
 					on:click={() => dispatch('copyRemote', talk.id)}
 					title="Copy Remote URL">📱</button
 				>
 				<button
-					class="btn-icon"
+					class="rounded-md px-2 py-1 text-base text-slate-400 transition hover:bg-white/10 hover:text-sky-300"
 					on:click={() => dispatch('copyComment', talk.id)}
 					title="Copy Comment URL">💬</button
 				>
-				<button class="btn-delete" on:click={() => handleDelete(talk.id)}>🗑</button>
+				<button
+					class="rounded-md px-2 py-1 text-base text-red-400 transition hover:bg-red-500/10"
+					on:click={() => handleDelete(talk.id)}
+				>
+					🗑
+				</button>
 			</div>
 		</div>
 	{/each}
 </div>
-
-<style>
-	.talk-list {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-	.talk-item {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 12px;
-		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		transition: background 0.2s;
-	}
-	.talk-item.active {
-		background: rgba(56, 189, 248, 0.1);
-		border-color: #38bdf8;
-	}
-	.drag-handle {
-		cursor: grab;
-		color: #64748b;
-		font-size: 1.2rem;
-	}
-	.info {
-		flex: 1;
-	}
-	.name {
-		font-weight: bold;
-		color: #e2e8f0;
-	}
-	.title {
-		font-size: 0.9rem;
-		color: #94a3b8;
-	}
-	.actions {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-	button {
-		padding: 6px 12px;
-		border-radius: 6px;
-		border: none;
-		cursor: pointer;
-		font-size: 0.9rem;
-	}
-	.btn-play {
-		background: #38bdf8;
-		color: #0f172a;
-		font-weight: bold;
-	}
-	.btn-delete {
-		background: transparent;
-		color: #ef4444;
-		font-size: 1.1rem;
-		padding: 4px 8px;
-	}
-	.btn-icon {
-		background: transparent;
-		color: #94a3b8;
-		font-size: 1.1rem;
-		padding: 4px 8px;
-	}
-	.btn-icon:hover {
-		color: #38bdf8;
-		background: rgba(255, 255, 255, 0.1);
-	}
-	.badge-live {
-		background: #ef4444;
-		color: white;
-		padding: 4px 8px;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		font-weight: bold;
-	}
-</style>

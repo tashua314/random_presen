@@ -39,55 +39,31 @@
 	});
 </script>
 
-<div class="timer" class:urgent={remaining < 60}>
-	<div class="time">{formatTime(remaining)}</div>
-	<div class="controls">
+<div class="flex flex-col items-center gap-2">
+	<div class={`text-4xl font-bold tabular-nums ${remaining < 60 ? 'text-rose-400' : 'text-white'}`}>
+		{formatTime(remaining)}
+	</div>
+	<div class="flex gap-2">
 		{#if !running}
-			<button on:click={start} class="btn-start">Start</button>
+			<button
+				class="rounded bg-emerald-400 px-3 py-1 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300"
+				on:click={start}
+			>
+				Start
+			</button>
 		{:else}
-			<button on:click={stop} class="btn-stop">Stop</button>
+			<button
+				class="rounded bg-rose-400 px-3 py-1 text-sm font-semibold text-rose-950 transition hover:bg-rose-300"
+				on:click={stop}
+			>
+				Stop
+			</button>
 		{/if}
-		<button on:click={reset} class="btn-reset">Reset</button>
+		<button
+			class="rounded bg-slate-400 px-3 py-1 text-sm font-semibold text-slate-900 transition hover:bg-slate-300"
+			on:click={reset}
+		>
+			Reset
+		</button>
 	</div>
 </div>
-
-<style>
-	.timer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-	}
-	.time {
-		font-size: 3rem;
-		font-weight: bold;
-		font-variant-numeric: tabular-nums;
-		color: #fff;
-	}
-	.urgent .time {
-		color: #ff6b6b;
-	}
-	.controls {
-		display: flex;
-		gap: 0.5rem;
-	}
-	button {
-		padding: 0.25rem 0.75rem;
-		border-radius: 0.25rem;
-		border: none;
-		cursor: pointer;
-		font-weight: bold;
-	}
-	.btn-start {
-		background: #4ade80;
-		color: #064e3b;
-	}
-	.btn-stop {
-		background: #f87171;
-		color: #7f1d1d;
-	}
-	.btn-reset {
-		background: #94a3b8;
-		color: #0f172a;
-	}
-</style>

@@ -87,37 +87,12 @@
 	}
 </script>
 
-<div class="pdf-container">
+<div class="relative flex h-full w-full items-center justify-center overflow-auto bg-black">
 	{#if loading}
-		<div class="loading">Loading PDF...</div>
+		<div class="absolute text-slate-200">Loading PDF...</div>
 	{/if}
 	{#if error}
-		<div class="error">{error}</div>
+		<div class="absolute text-sm text-rose-300">{error}</div>
 	{/if}
-	<canvas bind:this={canvas}></canvas>
+	<canvas class="max-h-full max-w-full object-contain" bind:this={canvas}></canvas>
 </div>
-
-<style>
-	.pdf-container {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background: #000;
-		overflow: auto;
-	}
-	canvas {
-		max-width: 100%;
-		max-height: 100%;
-		object-fit: contain;
-	}
-	.loading,
-	.error {
-		color: white;
-		position: absolute;
-	}
-	.error {
-		color: #ff6b6b;
-	}
-</style>
