@@ -95,21 +95,21 @@ Supabase Realtime を利用し、以下の変更を購読する。
 
 ```ts
 supabase
-  .channel('realtime:slide_states')
-  .on(
-    'postgres_changes',
-    {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'slide_states'
-    },
-    payload => {
-      if (payload.new.talk_id === currentTalkId) {
-        currentPage.set(payload.new.current_page);
-      }
-    }
-  )
-  .subscribe();
+	.channel('realtime:slide_states')
+	.on(
+		'postgres_changes',
+		{
+			event: 'UPDATE',
+			schema: 'public',
+			table: 'slide_states'
+		},
+		(payload) => {
+			if (payload.new.talk_id === currentTalkId) {
+				currentPage.set(payload.new.current_page);
+			}
+		}
+	)
+	.subscribe();
 ```
 
 ### 2.2 コメントタイムライン同期
@@ -122,21 +122,21 @@ supabase
 
 ```ts
 supabase
-  .channel('realtime:comments')
-  .on(
-    'postgres_changes',
-    {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'comments'
-    },
-    payload => {
-      if (payload.new.talk_id === currentTalkId) {
-        comments.update(list => [...list, payload.new]);
-      }
-    }
-  )
-  .subscribe();
+	.channel('realtime:comments')
+	.on(
+		'postgres_changes',
+		{
+			event: 'INSERT',
+			schema: 'public',
+			table: 'comments'
+		},
+		(payload) => {
+			if (payload.new.talk_id === currentTalkId) {
+				comments.update((list) => [...list, payload.new]);
+			}
+		}
+	)
+	.subscribe();
 ```
 
 ### 2.3 現在登壇者の同期（任意）

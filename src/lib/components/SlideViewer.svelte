@@ -1,106 +1,123 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { browser } from "$app/environment";
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-    export let url: string;
-    export let page: number = 1;
+	export let url: string;
+	export let page: number = 1;
 
-    let canvas: HTMLCanvasElement;
-    let pdfjsLib: any;
-    let pdfDoc: any = null;
-    let renderTask: any = null;
-    let loading = false;
-    let error = "";
+	let canvas: HTMLCanvasElement;
+	let pdfjsLib: typeof import('pdfjs-dist') | null = null;
+	let pdfDoc: unknown = null;
+	let renderTask: unknown = null;
+	let loading = false;
+	let error = '';
 
-    onMount(async () => {
-        if (browser) {
-            pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-            if (url) loadPdf(url);
-        }
-    });
+	onMount(async () => {
+		if (browser) {
+			pdfjsLib = await import('pdfjs-dist');
+			pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+			if (url) loadPdf(url);
+		}
+	});
 
-    $: if (pdfjsLib && url) loadPdf(url);
-    $: if (pdfDoc && page) renderPage(page);
+	$: if (pdfjsLib && url) loadPdf(url);
+	$: if (pdfDoc && page) renderPage(page);
 
-    async function loadPdf(pdfUrl: string) {
-        if (!pdfjsLib) return;
-        try {
-            loading = true;
-            error = "";
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
-            pdfDoc = await loadingTask.promise;
-            loading = false;
-            renderPage(page);
-        } catch (e: any) {
-            console.error("Error loading PDF:", e);
-            error = "PDFの読み込みに失敗しました: " + e.message;
-            loading = false;
-        }
-    }
+	async function loadPdf(pdfUrl: string) {
+		if (!pdfjsLib) return;
+		try {
+			loading = true;
+			error = '';
 
-    async function renderPage(num: number) {
-        if (!pdfDoc || !canvas) return;
-        if (renderTask) {
-            await renderTask.cancel();
-        }
+			// Use local proxy to bypass CORS and handle Drive links
+			const proxyUrl = `/api/proxy/pdf?url=${encodeURIComponent(pdfUrl)}`;
 
-        try {
-            const pageProxy = await pdfDoc.getPage(num);
-            const viewport = pageProxy.getViewport({ scale: 1.5 });
+			const loadingTask = pdfjsLib.getDocument({
+				url: proxyUrl,
+				cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
+				cMapPacked: true
+			});
+			pdfDoc = await loadingTask.promise;
+			loading = false;
+			renderPage(page);
+		} catch (e: unknown) {
+			console.error('Error loading PDF:', e);
+			const message = e instanceof Error ? e.message : String(e);
+			error = 'PDFの読み込みに失敗しました: ' + message;
+			loading = false;
+		}
+	}
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+	async function renderPage(num: number) {
+		if (!pdfDoc || !canvas) return;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		if (renderTask && (renderTask as any).cancel) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			await (renderTask as any).cancel();
+		}
 
-            const context = canvas.getContext("2d");
-            if (!context) return;
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const pageProxy = await (pdfDoc as any).getPage(num);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const viewport = (pageProxy as any).getViewport({ scale: 1.5 });
 
-            const renderContext = {
-                canvasContext: context,
-                viewport: viewport,
-            };
+			canvas.height = viewport.height;
+			canvas.width = viewport.width;
 
-            renderTask = pageProxy.render(renderContext as any);
-            await renderTask.promise;
-        } catch (e: any) {
-            if (e.name !== "RenderingCancelledException") {
-                console.error("Error rendering page:", e);
-            }
-        }
-    }
+			const context = canvas.getContext('2d');
+			if (!context) return;
+
+			const renderContext = {
+				canvasContext: context,
+				viewport: viewport
+			};
+
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			renderTask = (pageProxy as any).render(renderContext);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			await (renderTask as any).promise;
+		} catch (e: unknown) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			if ((e as any).name !== 'RenderingCancelledException') {
+				console.error('Error rendering page:', e);
+			}
+		}
+	}
 </script>
 
 <div class="pdf-container">
-    {#if loading}
-        <div class="loading">Loading PDF...</div>
-    {/if}
-    {#if error}
-        <div class="error">{error}</div>
-    {/if}
-    <canvas bind:this={canvas}></canvas>
+	{#if loading}
+		<div class="loading">Loading PDF...</div>
+	{/if}
+	{#if error}
+		<div class="error">{error}</div>
+	{/if}
+	<canvas bind:this={canvas}></canvas>
 </div>
 
 <style>
-    .pdf-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #000;
-        overflow: auto;
-    }
-    canvas {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-    .loading,
-    .error {
-        color: white;
-        position: absolute;
-    }
-    .error {
-        color: #ff6b6b;
-    }
+	.pdf-container {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: #000;
+		overflow: auto;
+	}
+	canvas {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+	.loading,
+	.error {
+		color: white;
+		position: absolute;
+	}
+	.error {
+		color: #ff6b6b;
+	}
 </style>

@@ -1,519 +1,327 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { shuffle } from '$lib';
-	import { onMount } from 'svelte';
-	import { fly } from 'svelte/transition';
-
-	const STORAGE_KEY = 'random-presen-participants';
-	const kanjiNumbers = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-
-	let input = '';
-	let participants: string[] = [];
-	let order: string[] = [];
-	let revealedIndex = -1;
-	let error = '';
-	let isReadyToShuffle = false;
-	let hasOrder = false;
-	let isFinished = false;
-	let shownCount = 0;
-	let remaining = 0;
-	let currentName = '';
-	let nextLabel = '表示';
-
-	const positionLabel = (position: number) => {
-		const numeral = kanjiNumbers[position - 1] ?? `${position}`;
-		return `${numeral}人目`;
-	};
-
-	const loadParticipants = () => {
-		if (!browser) return;
-		const saved = localStorage.getItem(STORAGE_KEY);
-		if (!saved) return;
-		try {
-			const parsed = JSON.parse(saved);
-			if (Array.isArray(parsed)) {
-				participants = parsed.filter((item) => typeof item === 'string' && item.trim().length > 0);
-			}
-		} catch (err) {
-			console.error('Failed to parse saved participants', err);
-		}
-	};
-
-	onMount(loadParticipants);
-
-	$: if (browser) {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
-	}
-
-	$: isReadyToShuffle = participants.length >= 2;
-	$: hasOrder = order.length > 0;
-	$: isFinished = hasOrder && revealedIndex >= order.length - 1 && order.length > 0;
-	$: shownCount = revealedIndex + 1;
-	$: remaining = hasOrder ? Math.max(order.length - shownCount, 0) : 0;
-	$: currentName = revealedIndex >= 0 ? order[revealedIndex] : '';
-	$: nextLabel = hasOrder && !isFinished ? positionLabel(revealedIndex + 2) : '表示';
-
-	const addParticipant = () => {
-		error = '';
-		const name = input.trim();
-		if (!name) {
-			error = '名前を入力してください';
-			return;
-		}
-		if (participants.includes(name)) {
-			error = '同じ名前は登録できません';
-			return;
-		}
-		participants = [...participants, name];
-		input = '';
-	};
-
-	const removeParticipant = (name: string) => {
-		if (hasOrder) return;
-		participants = participants.filter((entry) => entry !== name);
-	};
-
-	const handleSubmit = (event: Event) => {
-		event.preventDefault();
-		addParticipant();
-	};
-
-	const doShuffle = () => {
-		error = '';
-		if (!isReadyToShuffle) {
-			error = '2人以上登録してください';
-			return;
-		}
-		order = shuffle(participants);
-		revealedIndex = -1;
-	};
-
-	const revealNext = () => {
-		error = '';
-		if (!hasOrder) {
-			error = '先にランダムに並べてください';
-			return;
-		}
-		if (revealedIndex < order.length - 1) {
-			revealedIndex += 1;
-		}
-	};
-
-	const resetAll = () => {
-		input = '';
-		participants = [];
-		order = [];
-		revealedIndex = -1;
-		error = '';
-		if (browser) {
-			localStorage.removeItem(STORAGE_KEY);
-		}
-	};
+	import { resolve } from '$app/paths';
 </script>
 
-<svelte:head>
-	<title>ランダム登壇順ジェネレーター</title>
-</svelte:head>
+<div class="landing-page">
+	<header>
+		<h1>🎤 LT Realtime Screen App</h1>
+		<p class="subtitle">LT（Lightning Talk）イベント用のリアルタイム画面表示システム</p>
+	</header>
 
-<main class="page">
-	<section class="hero">
-		<div>
-			<p class="eyebrow">プレゼン順決め</p>
-			<h1>ランダムに順番決定、1人ずつ表示</h1>
-			<p class="lede">
-				登壇者を登録して「ランダムに並べる」を押したら、「一人目」ボタンから順に表示していきます。
-				全員見終わったらリセットでやり直しできます。
+	<main>
+		<section class="intro">
+			<h2>このアプリでできること</h2>
+			<p>
+				LT Realtime Screen
+				Appは、ライトニングトークイベントをスムーズに進行するための総合システムです。
+				スライド表示、コメント投稿、リモート操作など、イベント運営に必要な機能をすべて備えています。
 			</p>
-		</div>
-	</section>
+		</section>
 
-	<section class="card">
-		<header>
-			<h2>登壇者を登録</h2>
-			<p class="muted">重複は登録不可。2名以上でシャッフルできます。</p>
-		</header>
-
-		<form class="input-row" on:submit|preventDefault={handleSubmit}>
-			<label class="sr-only" for="name-input">登壇者名</label>
-			<input
-				id="name-input"
-				name="name"
-				placeholder="登壇者名を入力"
-				bind:value={input}
-				aria-label="登壇者名"
-				disabled={hasOrder}
-				autocomplete="off"
-			/>
-			<button type="submit" class="primary" disabled={!input.trim() || hasOrder}>追加</button>
-		</form>
-
-		{#if error}
-			<p class="error">{error}</p>
-		{/if}
-
-		<div class="chips" aria-live="polite">
-			{#if participants.length === 0}
-				<p class="placeholder">まだ登録がありません</p>
-			{:else}
-				{#each participants as name (name)}
-					<span class="chip">
-						{name}
-						<button
-							type="button"
-							class="icon-button"
-							on:click={() => removeParticipant(name)}
-							aria-label={`${name} を削除`}
-							disabled={hasOrder}
-						>
-							✕
-						</button>
-					</span>
-				{/each}
-			{/if}
-		</div>
-		<p class="count">登録人数: {participants.length} 人</p>
-	</section>
-
-	<section class="card actions">
-		<div class="action-row">
-			<div>
-				<h2>順番をシャッフル</h2>
-				<p class="muted">
-					{#if hasOrder}
-						順番が決まりました。リセットするまで変更できません。
-					{:else}
-						「ランダムに並べる」は 2 名以上で有効になります。
-					{/if}
-				</p>
-			</div>
-			<button
-				class="primary"
-				type="button"
-				on:click={doShuffle}
-				disabled={!isReadyToShuffle || hasOrder}
-			>
-				ランダムに並べる
-			</button>
-		</div>
-	</section>
-
-	{#if hasOrder}
-		<section class="card reveal">
-			<header class="reveal-head">
-				<h2>順番を表示</h2>
-				<div class="reveal-actions">
-					<button class="primary" type="button" on:click={revealNext} disabled={isFinished}>
-						{nextLabel}
-					</button>
-					<button class="ghost" type="button" on:click={resetAll}>リセット/もう一度</button>
-				</div>
-			</header>
-
-			<div class="display" aria-live="polite">
-				{#if currentName}
-					{#key currentName}
-						<div class="name" transition:fly={{ y: 12, duration: 220, opacity: 0.2 }}>
-							{currentName}
-						</div>
-					{/key}
-				{:else}
-					<p class="placeholder">ボタンを押して表示を開始</p>
-				{/if}
+		<section class="features">
+			<div class="feature-card">
+				<div class="icon">⚙️</div>
+				<h3>管理画面</h3>
+				<p>プレゼンテーション情報の登録・編集・順番管理を行います。</p>
+				<ul>
+					<li>発表者情報とスライドURLの登録</li>
+					<li>発表順序のドラッグ&ドロップ変更</li>
+					<li>リモート操作URLとコメントURLのコピー</li>
+					<li>スライドの操作（Prev/Next）</li>
+				</ul>
+				<a href={resolve('/admin')} class="btn btn-primary">管理画面を開く</a>
 			</div>
 
-			<div class="progress-row">
-				{#if isFinished}
-					<p class="complete">全員表示しました</p>
-				{:else}
-					<p class="muted">残り {remaining} 人</p>
-				{/if}
-				<p class="muted">
-					表示済み: {Math.max(shownCount, 0)} / {order.length}
-				</p>
+			<div class="feature-card">
+				<div class="icon">📺</div>
+				<h3>スクリーン画面</h3>
+				<p>プロジェクターに映す画面です。リアルタイムでスライドとコメントが表示されます。</p>
+				<ul>
+					<li>PDFスライドの表示</li>
+					<li>リアルタイムコメント表示</li>
+					<li>発表者情報とタイマー</li>
+					<li>キーボード/マウスでのスライド操作</li>
+				</ul>
+				<a href={resolve('/screen')} class="btn btn-secondary" target="_blank" rel="external"
+					>スクリーン画面を開く</a
+				>
+			</div>
+
+			<div class="feature-card">
+				<div class="icon">🎮</div>
+				<h3>リモート操作</h3>
+				<p>発表者がスマホやタブレットからスライドを操作できます。</p>
+				<ul>
+					<li>大きなボタンでスライド送り</li>
+					<li>現在のページ数表示</li>
+					<li>リアルタイム同期</li>
+				</ul>
+				<p class="note">※ 管理画面で各発表のURLをコピーして発表者に共有してください</p>
+			</div>
+
+			<div class="feature-card">
+				<div class="icon">💬</div>
+				<h3>コメント投稿</h3>
+				<p>聴衆がリアルタイムでコメントや質問を送信できます。</p>
+				<ul>
+					<li>ニックネーム付きでコメント投稿</li>
+					<li>スクリーン画面にリアルタイム表示</li>
+					<li>発表へのエンゲージメント向上</li>
+				</ul>
+				<p class="note">※ 管理画面で各発表のURLをコピーして聴衆に共有してください</p>
 			</div>
 		</section>
-	{/if}
-</main>
+
+		<section class="getting-started">
+			<h2>使い方</h2>
+			<ol class="steps">
+				<li>
+					<strong>管理画面</strong>で発表者情報とスライドURL（Google Driveの共有リンク等）を登録
+				</li>
+				<li><strong>スクリーン画面</strong>をプロジェクターに表示</li>
+				<li>各発表者に<strong>リモート操作URL</strong>を共有</li>
+				<li>聴衆に<strong>コメント投稿URL</strong>を共有（QRコードなどで）</li>
+				<li>管理画面で発表を開始（Play）して、イベントスタート！</li>
+			</ol>
+		</section>
+
+		<section class="tech-stack">
+			<h3>技術スタック</h3>
+			<div class="tags">
+				<span class="tag">SvelteKit</span>
+				<span class="tag">TypeScript</span>
+				<span class="tag">Neon PostgreSQL</span>
+				<span class="tag">Drizzle ORM</span>
+				<span class="tag">PDF.js</span>
+				<span class="tag">Tailwind CSS</span>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<p>
+			<a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a> •
+			<a href={resolve('/admin')}>管理画面</a> •
+			<a href={resolve('/screen')} target="_blank" rel="external">スクリーン</a>
+		</p>
+	</footer>
+</div>
 
 <style>
-	:global(body) {
-		margin: 0;
-		font-family: 'Noto Sans JP', 'Hiragino Sans', 'Helvetica Neue', Arial, sans-serif;
-		background: radial-gradient(circle at 20% 20%, #1b2a41 0%, #121420 40%, #0c0f17 100%);
-		color: #f7f8fc;
+	.landing-page {
 		min-height: 100vh;
+		background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+		color: #e2e8f0;
+		padding: 2rem;
 	}
 
-	*,
-	*::before,
-	*::after {
-		box-sizing: border-box;
+	header {
+		text-align: center;
+		margin-bottom: 3rem;
 	}
 
-	main.page {
-		max-width: 960px;
+	h1 {
+		font-size: 3rem;
+		margin: 0;
+		background: linear-gradient(135deg, #38bdf8, #3b82f6);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	.subtitle {
+		font-size: 1.2rem;
+		color: #94a3b8;
+		margin-top: 0.5rem;
+	}
+
+	main {
+		max-width: 1200px;
 		margin: 0 auto;
-		padding: 48px 24px 80px;
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
 	}
 
-	.hero h1 {
-		margin: 4px 0 12px;
-		font-size: clamp(24px, 3vw, 32px);
+	section {
+		margin-bottom: 3rem;
 	}
 
-	.hero .lede {
-		margin: 0;
-		color: #c8d1e6;
-		line-height: 1.6;
+	h2 {
+		font-size: 2rem;
+		margin-bottom: 1rem;
+		color: #cbd5e1;
 	}
 
-	.eyebrow {
-		font-size: 12px;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: #8ba6f2;
-		margin: 0;
+	h3 {
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
+		color: #e2e8f0;
 	}
 
-	.card {
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 16px;
-		padding: 20px 24px;
-		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-		backdrop-filter: blur(4px);
-	}
-
-	header h2 {
-		margin: 0;
-	}
-
-	header .muted {
-		margin: 4px 0 0;
-	}
-
-	.input-row {
-		display: flex;
-		gap: 12px;
-		margin-top: 12px;
-	}
-
-	input {
-		flex: 1;
-		padding: 12px 14px;
-		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		background: rgba(255, 255, 255, 0.05);
-		color: #f7f8fc;
-		font-size: 16px;
-	}
-
-	input:focus {
-		outline: 2px solid #7fa8ff;
-		outline-offset: 2px;
-	}
-
-	button {
-		border: none;
-		border-radius: 12px;
-		cursor: pointer;
-		font-size: 14px;
-		padding: 12px 16px;
-		transition: transform 120ms ease, opacity 120ms ease, background 200ms ease, border 200ms ease;
-	}
-
-	button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-		transform: none;
-	}
-
-	button.primary {
-		background: linear-gradient(135deg, #6fb5ff, #3a7bff);
-		color: #0b1021;
-		font-weight: 700;
-		letter-spacing: 0.02em;
-	}
-
-	button.primary:not(:disabled):hover {
-		transform: translateY(-1px);
-	}
-
-	button.ghost {
-		background: transparent;
-		color: #c8d1e6;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-	}
-
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 14px;
-		min-height: 28px;
-	}
-
-	.chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 10px;
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		font-size: 13px;
-	}
-
-	.icon-button {
-		background: rgba(255, 255, 255, 0.08);
-		color: #f7f8fc;
-		padding: 4px 8px;
-		border-radius: 8px;
-	}
-
-	.count {
-		margin: 10px 0 0;
-		color: #c8d1e6;
-		font-size: 14px;
-	}
-
-	.actions .action-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	.actions h2 {
-		margin: 0 0 4px;
-	}
-
-	.reveal {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-
-	.reveal-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	.reveal-actions {
-		display: flex;
-		gap: 10px;
-	}
-
-	.display {
-		min-height: 180px;
-		display: grid;
-		place-items: center;
-		border-radius: 14px;
-		background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		padding: 18px;
+	.intro p {
+		font-size: 1.1rem;
+		line-height: 1.8;
+		color: #cbd5e1;
+		max-width: 800px;
+		margin: 0 auto;
 		text-align: center;
 	}
 
-	.display .name {
-		font-size: clamp(28px, 5vw, 48px);
-		font-weight: 800;
-		letter-spacing: 0.02em;
-		background: linear-gradient(120deg, #ffcf71, #ffd86f, #ff9f7b);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
-		animation: pop 220ms ease, glow 1.6s ease;
+	.features {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.5rem;
+		margin-top: 2rem;
 	}
 
-	.placeholder {
-		color: #9daccc;
-		margin: 0;
+	.feature-card {
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 12px;
+		padding: 1.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		transition: all 0.3s;
 	}
 
-	.progress-row {
+	.feature-card:hover {
+		background: rgba(255, 255, 255, 0.08);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	}
+
+	.icon {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.feature-card ul {
+		margin: 1rem 0;
+		padding-left: 1.5rem;
+		color: #94a3b8;
+		line-height: 1.8;
+	}
+
+	.feature-card li {
+		margin-bottom: 0.5rem;
+	}
+
+	.note {
+		font-size: 0.9rem;
+		color: #64748b;
+		font-style: italic;
+		margin-top: 1rem;
+	}
+
+	.btn {
+		display: inline-block;
+		padding: 0.75rem 1.5rem;
+		border-radius: 8px;
+		text-decoration: none;
+		font-weight: bold;
+		margin-top: 1rem;
+		transition: all 0.2s;
+	}
+
+	.btn-primary {
+		background: linear-gradient(135deg, #3b82f6, #2563eb);
+		color: white;
+	}
+
+	.btn-primary:hover {
+		transform: scale(1.05);
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+	}
+
+	.btn-secondary {
+		background: #334155;
+		color: #cbd5e1;
+	}
+
+	.btn-secondary:hover {
+		background: #475569;
+	}
+
+	.getting-started {
+		background: rgba(59, 130, 246, 0.1);
+		border-radius: 12px;
+		padding: 2rem;
+		border: 1px solid rgba(59, 130, 246, 0.2);
+	}
+
+	.steps {
+		list-style: none;
+		counter-reset: step-counter;
+		padding: 0;
+		max-width: 700px;
+		margin: 1.5rem auto 0;
+	}
+
+	.steps li {
+		counter-increment: step-counter;
+		margin-bottom: 1rem;
+		padding-left: 3rem;
+		position: relative;
+		line-height: 1.6;
+	}
+
+	.steps li::before {
+		content: counter(step-counter);
+		position: absolute;
+		left: 0;
+		top: 0;
+		background: #3b82f6;
+		color: white;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: center;
+		font-weight: bold;
+	}
+
+	.tech-stack {
+		text-align: center;
+	}
+
+	.tags {
+		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: 0.75rem;
+		justify-content: center;
+		margin-top: 1rem;
 	}
 
-	.complete {
-		margin: 0;
-		color: #9ce6c2;
-		font-weight: 600;
+	.tag {
+		background: rgba(56, 189, 248, 0.2);
+		color: #38bdf8;
+		padding: 0.5rem 1rem;
+		border-radius: 20px;
+		font-size: 0.9rem;
+		border: 1px solid rgba(56, 189, 248, 0.3);
 	}
 
-	.muted {
-		color: #b7c3df;
-		margin: 0;
+	footer {
+		text-align: center;
+		margin-top: 4rem;
+		padding-top: 2rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		color: #64748b;
 	}
 
-	.error {
-		color: #ff9b9b;
-		margin: 10px 0 0;
+	footer a {
+		color: #38bdf8;
+		text-decoration: none;
 	}
 
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
+	footer a:hover {
+		text-decoration: underline;
 	}
 
-	@keyframes pop {
-		from {
-			transform: scale(0.96);
-		}
-		to {
-			transform: scale(1);
-		}
-	}
-
-	@keyframes glow {
-		0% {
-			text-shadow: 0 0 0 rgba(255, 207, 113, 0.1);
-		}
-		50% {
-			text-shadow: 0 0 18px rgba(255, 207, 113, 0.45);
-		}
-		100% {
-			text-shadow: 0 0 0 rgba(255, 207, 113, 0.15);
-		}
-	}
-
-	@media (max-width: 640px) {
-		main.page {
-			padding: 32px 16px 48px;
+	@media (max-width: 768px) {
+		h1 {
+			font-size: 2rem;
 		}
 
-		.input-row,
-		.actions .action-row,
-		.reveal-head,
-		.reveal-actions {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.reveal-actions button {
-			width: 100%;
-		}
-
-		button.primary,
-		button.ghost {
-			width: 100%;
+		.features {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>
