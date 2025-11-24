@@ -1,38 +1,55 @@
-# sv
+# Random Presen (LT リアルタイムアプリ)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+LT（ライトニングトーク）イベントのためのリアルタイムスクリーンアプリです。
+**SvelteKit**, **Tailwind CSS**, **Neon (PostgreSQL)** (実装予定) で構築されています。
 
-## Creating a project
+## 機能
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **管理画面 (Admin Dashboard)**: 登壇者の管理、並び替え、プレゼンテーションの進行操作。
+- **スクリーン表示 (Screen View)**: プロジェクター向けの表示。リアルタイムに情報が更新されます。
+- **リモコン (Remote Controller)**: 登壇者が自分のデバイスからスライド操作を行えます。
+- **コメントシステム**: 参加者が投稿したコメントがスクリーン上に流れます。
+- **PDFスライド**: URL（Google Drive等）からPDFスライドを直接レンダリングします。
 
-```sh
-# create a new project in the current directory
-npx sv create
+## 技術スタック
 
-# create a new project in my-app
-npx sv create my-app
-```
+- **フレームワーク**: SvelteKit
+- **スタイリング**: Tailwind CSS
+- **PDFレンダリング**: pdf.js
+- **データベース**: Neon (PostgreSQL) *[実装中]*
+- **デプロイ**: Vercel
 
-## Developing
+## 始め方 (Mockモード)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+現在はインメモリデータを使用した **Mockモード** で動作します。
 
-```sh
-npm run dev
+1. **依存関係のインストール**:
+   ```bash
+   pnpm install
+   ```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+2. **開発サーバーの起動**:
+   ```bash
+   pnpm dev
+   ```
 
-## Building
+3. **アプリへのアクセス**:
+   - **管理画面**: `http://localhost:5173/admin` (パスワード: `admin123`)
+   - **スクリーン**: `http://localhost:5173/screen`
+   - **リモコン**: `http://localhost:5173/remote/[talk-id]`
+   - **コメント**: `http://localhost:5173/comment/[talk-id]`
 
-To create a production version of your app:
+## デプロイ (Vercel)
 
-```sh
-npm run build
-```
+Vercelへのデプロイ用に設定済みです。
 
-You can preview the production build with `npm run preview`.
+1. GitHubへプッシュします。
+2. Vercelでプロジェクトをインポートします。
+3. `@sveltejs/adapter-vercel` が自動的にビルドを処理します。
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## ロードマップ
+
+- [x] Mock実装 (UI/UX検証)
+- [ ] **Neon DB 統合** (データ永続化)
+- [ ] リアルタイム更新 (ポーリング または WebSocket)
+- [ ] 認証機能の統合
