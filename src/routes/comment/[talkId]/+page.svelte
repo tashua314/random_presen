@@ -58,10 +58,12 @@
 	{#if loading}
 		<div class="text-slate-400">Loading...</div>
 	{:else if error}
-		<div class="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">{error}</div>
+		<div class="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">
+			{error}
+		</div>
 	{:else if talk}
 		<header class="mb-10 flex flex-col items-center gap-2 text-center">
-			<div class="text-xs uppercase tracking-[0.12em] text-slate-500">Comment to</div>
+			<div class="text-xs tracking-[0.12em] text-slate-500 uppercase">Comment to</div>
 			<h1 class="text-3xl font-bold text-sky-400">{talk.name}</h1>
 			<p class="text-sm text-slate-400">{talk.title}</p>
 		</header>
@@ -71,7 +73,7 @@
 				<label class="text-sm font-semibold text-slate-200" for="name">ニックネーム (任意)</label>
 				<input
 					id="name"
-					class="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+					class="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 					bind:value={displayName}
 					placeholder="名無しさん"
 				/>
@@ -81,7 +83,7 @@
 				<label class="text-sm font-semibold text-slate-200" for="message">コメント</label>
 				<textarea
 					id="message"
-					class="min-h-[120px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+					class="min-h-[120px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 					bind:value={message}
 					placeholder="応援コメントや質問を送ろう！"
 					rows="4"
@@ -97,7 +99,9 @@
 			</button>
 
 			{#if successMsg}
-				<div class="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-center text-emerald-200">
+				<div
+					class="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-center text-emerald-200"
+				>
 					{successMsg}
 				</div>
 			{/if}

@@ -149,12 +149,14 @@
 
 <div class="mx-auto max-w-5xl px-5 py-8 text-slate-100">
 	{#if !authenticated}
-		<div class="mx-auto mt-20 flex max-w-md flex-col items-center gap-4 rounded-2xl border border-slate-700 bg-slate-800/70 p-10 text-center shadow-2xl shadow-black/30">
+		<div
+			class="mx-auto mt-20 flex max-w-md flex-col items-center gap-4 rounded-2xl border border-slate-700 bg-slate-800/70 p-10 text-center shadow-2xl shadow-black/30"
+		>
 			<div class="text-5xl">🔐</div>
 			<h1 class="text-2xl font-bold">管理画面</h1>
 			<p class="text-sm text-slate-400">パスワードを入力してログインしてください</p>
 			<input
-				class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+				class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 				type="password"
 				bind:value={password}
 				placeholder="Password"
@@ -168,25 +170,35 @@
 			{#if error}<p class="text-sm text-red-400">{error}</p>{/if}
 		</div>
 	{:else}
-		<header class="mb-8 flex flex-col gap-4 border-b border-slate-700 pb-6 md:flex-row md:items-start md:justify-between">
+		<header
+			class="mb-8 flex flex-col gap-4 border-b border-slate-700 pb-6 md:flex-row md:items-start md:justify-between"
+		>
 			<div class="space-y-2">
 				<h1 class="text-2xl font-bold">⚙️ イベント管理画面</h1>
 				{#if currentTalkId}
 					<div class="flex items-center gap-3">
-						<span class="rounded-full bg-emerald-400 px-3 py-1 text-sm font-bold text-emerald-950">🎤 発表中</span>
+						<span class="rounded-full bg-emerald-400 px-3 py-1 text-sm font-bold text-emerald-950"
+							>🎤 発表中</span
+						>
 						<span class="text-sm text-slate-300">スライド操作が可能です</span>
 					</div>
 				{:else}
 					<div class="flex items-center gap-3">
-						<span class="rounded-full bg-slate-600 px-3 py-1 text-sm font-bold text-slate-900">⏸️ 待機中</span>
+						<span class="rounded-full bg-slate-600 px-3 py-1 text-sm font-bold text-slate-900"
+							>⏸️ 待機中</span
+						>
 						<span class="text-sm text-slate-300">発表を開始してください</span>
 					</div>
 				{/if}
 			</div>
 			<div class="flex flex-wrap items-center gap-3">
 				{#if currentTalkId}
-					<div class="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 shadow-inner shadow-black/30">
-						<span class="min-w-[70px] text-center text-sm text-slate-300">Page {currentSlidePage}</span>
+					<div
+						class="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 shadow-inner shadow-black/30"
+					>
+						<span class="min-w-[70px] text-center text-sm text-slate-300"
+							>Page {currentSlidePage}</span
+						>
 						<button
 							class="rounded-md bg-slate-700 px-3 py-1 text-sm font-semibold text-slate-100 transition hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
 							on:click={prevPage}
@@ -218,9 +230,13 @@
 		</header>
 
 		<main class="flex flex-col gap-8">
-			<section class="rounded-xl border border-slate-700 bg-slate-800/70 p-6 shadow-lg shadow-black/30">
+			<section
+				class="rounded-xl border border-slate-700 bg-slate-800/70 p-6 shadow-lg shadow-black/30"
+			>
 				<div class="mb-6 space-y-1">
-					<h2 class="text-xl font-semibold">{editingId ? '✏️ 発表情報を編集' : '➕ 新しい発表を追加'}</h2>
+					<h2 class="text-xl font-semibold">
+						{editingId ? '✏️ 発表情報を編集' : '➕ 新しい発表を追加'}
+					</h2>
 					<p class="text-sm text-slate-400">
 						{editingId ? '発表情報を更新します' : '発表者名、タイトル、PDFのURLを入力してください'}
 					</p>
@@ -230,25 +246,28 @@
 						<label class="text-sm font-semibold text-slate-200" for="speaker-name">発表者名</label>
 						<input
 							id="speaker-name"
-							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 							bind:value={newName}
 							placeholder="山田 太郎"
 						/>
 					</div>
 					<div class="flex flex-col gap-2">
-						<label class="text-sm font-semibold text-slate-200" for="talk-title">発表タイトル</label>
+						<label class="text-sm font-semibold text-slate-200" for="talk-title">発表タイトル</label
+						>
 						<input
 							id="talk-title"
-							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 							bind:value={newTitle}
 							placeholder="私の素晴らしいアイデア"
 						/>
 					</div>
 					<div class="flex flex-col gap-2 md:col-span-2">
-						<label class="text-sm font-semibold text-slate-200" for="slide-url">スライドURL (PDF)</label>
+						<label class="text-sm font-semibold text-slate-200" for="slide-url"
+							>スライドURL (PDF)</label
+						>
 						<input
 							id="slide-url"
-							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white outline-none ring-sky-500/40 transition focus:border-transparent focus:ring-2"
+							class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-white ring-sky-500/40 transition outline-none focus:border-transparent focus:ring-2"
 							bind:value={newUrl}
 							placeholder="https://drive.google.com/file/d/..."
 						/>
@@ -272,15 +291,21 @@
 				</div>
 			</section>
 
-			<section class="rounded-xl border border-slate-700 bg-slate-800/70 p-6 shadow-lg shadow-black/30">
+			<section
+				class="rounded-xl border border-slate-700 bg-slate-800/70 p-6 shadow-lg shadow-black/30"
+			>
 				<div class="mb-6 space-y-1">
-					<h2 class="text-xl font-semibold">📋 発表リスト {talks.length > 0 ? `(${talks.length}件)` : ''}</h2>
+					<h2 class="text-xl font-semibold">
+						📋 発表リスト {talks.length > 0 ? `(${talks.length}件)` : ''}
+					</h2>
 					<p class="text-sm text-slate-400">
 						ドラッグ&ドロップで順序変更 • 各種URLをコピーして共有できます
 					</p>
 				</div>
 				{#if talks.length === 0}
-					<div class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-slate-600/70 bg-slate-900/60 px-6 py-10 text-center text-slate-400">
+					<div
+						class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-slate-600/70 bg-slate-900/60 px-6 py-10 text-center text-slate-400"
+					>
 						<div class="text-4xl">📝</div>
 						<p class="text-lg font-semibold text-slate-200">まだ発表が登録されていません</p>
 						<p class="text-sm text-slate-400">上のフォームから最初の発表を追加しましょう</p>

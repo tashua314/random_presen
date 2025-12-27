@@ -58,10 +58,12 @@
 	{#if loading}
 		<div class="text-slate-400">Loading...</div>
 	{:else if error}
-		<div class="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">{error}</div>
+		<div class="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">
+			{error}
+		</div>
 	{:else if talk}
 		<header class="mb-10 flex flex-col items-center gap-2 text-center">
-			<div class="text-xs uppercase tracking-[0.12em] text-slate-500">Remote Controller</div>
+			<div class="text-xs tracking-[0.12em] text-slate-500 uppercase">Remote Controller</div>
 			<h1 class="text-3xl font-bold text-sky-400">{talk.name}</h1>
 			<p class="text-sm text-slate-400">{talk.title}</p>
 		</header>

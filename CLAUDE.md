@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 LT Realtime Screen App - ライトニングトークイベント用のリアルタイム画面表示システム。
 
 主要機能:
+
 - **管理画面** (`/admin`): 発表者情報・スライドURL登録、発表順序管理
 - **スクリーン画面** (`/screen`): プロジェクター表示用（PDFスライド + リアルタイムコメント）
 - **リモート操作** (`/remote/[talkId]`): 発表者用スライド操作
