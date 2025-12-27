@@ -45,26 +45,27 @@
 
 ## 3. データ設計
 ### 3-1. コメント（既存）
-想定（例）：
+現在のスキーマ：
 - `comments`
-  - `id` (uuid/ulid)
-  - `talk_id` (uuid/string)
-  - `body` (text)
+  - `id` (uuid)
+  - `talk_id` (uuid)
+  - `display_name` (text)
+  - `message` (text)
   - `created_at` (timestamp)
 
 **差分取得のためのインデックス**
 - `INDEX (talk_id, created_at, id)` もしくは `INDEX (talk_id, id)`  
   - UUIDv4で `id > after` が使えない場合は created_at 併用する
 
-### 3-2. トーク状態（追加 or 既存拡張）
-- `talk_states`
-  - `talk_id` (PK)
+### 3-2. スライド状態（既存）
+現在のスキーマ：
+- `slide_states`
+  - `id` (uuid, PK)
+  - `talk_id` (uuid, unique)
   - `current_page` (int)
   - `updated_at` (timestamp)
-  - `updated_by` (user_id or "system")
 
-**インデックス**
-- PK: `talk_id`
+> Pusher導入時に `updated_by` カラム追加を検討
 
 ---
 
@@ -102,16 +103,16 @@
 
 ---
 
-### 4-3. トーク状態取得
-**GET** `/api/talks/[talkId]/state`
+### 4-3. スライド状態取得（既存）
+**GET** `/api/state/slide/[talkId]`
 
 レスポンス：
 ```json
-{ "currentPage": 12, "updatedAt": "..." }
+{ "talkId": "...", "currentPage": 12 }
 ```
 
-### 4-4. トーク状態更新（登壇者操作の永続化）
-**POST** `/api/talks/[talkId]/state`
+### 4-4. スライド状態更新（既存 → Pusher対応に拡張）
+**POST** `/api/state/slide/[talkId]`
 - 認可：登壇者のみ
 - body例：
 ```json
@@ -180,7 +181,7 @@ Vercel上で **認可エンドポイント**を用意して署名する。
 ## 7. 重要な仕様（整合性・再接続）
 ### 7-1. 再接続時
 - スクリーンは起動時に
-  1) `GET /api/talks/[talkId]/state` で currentPage を取得
+  1) `GET /api/state/slide/[talkId]` で currentPage を取得
   2) Pusher subscribe して以降の操作を反映
 - コメントは
   1) 初回 `GET /api/comments/[talkId]?limit=200` など
@@ -218,9 +219,9 @@ PUBLIC_PUSHER_CLUSTER=
 
 ## 9. 実装ファイル一覧（提案）
 ### 9-1. 追加・変更
-- `src/routes/api/comments/[talkId]/+server.ts`（GET差分対応）
-- `src/routes/api/talks/[talkId]/state/+server.ts`（GET/POST追加）
-- `src/routes/api/pusher/auth/+server.ts`（Pusher private認可）
+- `src/routes/api/comments/[talkId]/+server.ts`（GET差分対応に変更）
+- `src/routes/api/state/slide/[talkId]/+server.ts`（POST時にPusher publish追加）
+- `src/routes/api/pusher/auth/+server.ts`（Pusher private認可、新規）
 
 - `src/lib/services/comments-subscriber.ts`（差分ポーリング）
 - `src/lib/services/pusher-client.ts`（Pusher client wrapper）
@@ -243,10 +244,10 @@ PUBLIC_PUSHER_CLUSTER=
 4. Screen: 受信分をappend
 
 ### 10-2. 登壇者操作（Pusher）
-1. Admin: 버튼押下 → `POST /api/talks/:talkId/state {action}`
-2. API: 認可 → DB更新（talk_states） → Pusher `trigger(slide.control)`
+1. Admin: ボタン押下 → `POST /api/state/slide/:talkId {action}`
+2. API: 認可 → DB更新（slide_states） → Pusher `trigger(slide.control)`
 3. Screen: Pusherで受信 → 画面更新
-4. Screen（再接続）: `GET /api/talks/:talkId/state` で復元
+4. Screen（再接続）: `GET /api/state/slide/:talkId` で復元
 
 ---
 
@@ -262,19 +263,13 @@ PUBLIC_PUSHER_CLUSTER=
 ---
 
 ## 12. マイグレーション（例）
-> 既存に talk_states がなければ追加
+> `slide_states` は既存。Pusher対応で `updated_by` を追加する場合：
 
-- `db/migrations/xxxx_create_talk_states.sql`（または drizzle の migration）
-
-例（SQL）：
 ```sql
-create table if not exists talk_states (
-  talk_id text primary key,
-  current_page integer not null default 1,
-  updated_at timestamptz not null default now(),
-  updated_by text
-);
+ALTER TABLE slide_states ADD COLUMN updated_by text;
 ```
+
+または Drizzle migration で対応。
 
 ---
 
