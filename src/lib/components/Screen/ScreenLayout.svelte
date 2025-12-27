@@ -85,9 +85,11 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <div
-	class={`grid min-h-screen w-screen gap-4 bg-slate-950 p-4 text-white ${layoutConfig.container}`}
+	class={`grid h-screen w-screen gap-4 overflow-hidden bg-slate-950 p-4 text-white ${layoutConfig.container}`}
 >
-	<div class={`rounded-xl bg-slate-800/70 p-4 shadow-lg shadow-black/30 ${layoutConfig.info}`}>
+	<div
+		class={`overflow-y-auto rounded-xl bg-slate-800/70 p-4 shadow-lg shadow-black/30 ${layoutConfig.info}`}
+	>
 		<div class="text-sm tracking-[0.1em] text-slate-400 uppercase">{eventName}</div>
 		{#if currentTalk}
 			<div class="mt-2 space-y-1">
