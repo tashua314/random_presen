@@ -13,14 +13,15 @@ LTイベント向けに、以下を行える Web アプリケーションを提�
 - 登壇者がリモート（PC/スマホ）からスライドのページ送りを行える
 - 参加者がスマホから投稿したコメントを、リアルタイムにスクリーンにタイムライン表示する
 
-### 1.2 想定技術スタック
+### 1.2 技術スタック
 
 - フレームワーク: **SvelteKit**
 - 言語: TypeScript
-- UI: Svelte + Tailwind CSS
-- データ・リアルタイム: Supabase (PostgreSQL + Realtime)
+- UI: Svelte + Tailwind CSS v4
+- データベース: Neon PostgreSQL + Drizzle ORM
+- リアルタイム同期: HTTPポーリング（1秒間隔）
 - スライド表示: pdf.js（ブラウザ側でレンダリング）
-- デプロイ: Vercel / Netlify / Cloudflare Pages など（SvelteKit対応環境）
+- デプロイ: Vercel
 
 ---
 
@@ -127,7 +128,7 @@ LTイベント向けに、以下を行える Web アプリケーションを提�
 
 ## 4. データ設計（概要）
 
-詳細は `docs/data-model-and-realtime.md` を参照。ここでは要点のみ。
+詳細は `docs/completed/data-model-and-realtime.md` を参照。ここでは要点のみ。
 
 ### 4.1 talks テーブル
 
@@ -168,21 +169,22 @@ LTイベント向けに、以下を行える Web アプリケーションを提�
 
 ## 5. アーキテクチャ（SvelteKit観点）
 
-- `src/routes` 配下に各画面の `+page.svelte` / `+page.server.ts` を配置
-- Supabase クライアントは `src/lib/supabaseClient.ts` などに切り出す
+- `src/routes` 配下に各画面の `+page.svelte` を配置
+- `src/routes/api` 配下にAPIエンドポイントを配置
+- データアクセスは `src/lib/services/` で `DataService` インターフェースとして抽象化
 - PDF ビューアは `SlideViewer` コンポーネントとして分離
 - コメントタイムライン・タイマーなどもコンポーネント単位で作成
 
-詳細なルーティングとコンポーネント分割は  
-`docs/routes-and-components-sveltekit.md` を参照。
+詳細なルーティングとコンポーネント分割は
+`docs/completed/routes-and-components-sveltekit.md` を参照。
 
 ---
 
-## 6. MVP 実装優先度
+## 6. MVP 実装優先度（完了）
 
-1. データモデル（Supabase / schema）準備
-2. `/admin` での登壇者登録・順番管理
-3. `/screen` での「現在登壇者情報＋スライド静的表示」
-4. `/remote/[talkId]` と `slide_states` の Realtime 同期（ページ送り）
-5. `/comment/[talkId]` と `comments` の Realtime 同期（タイムライン）
-6. `/screen` のレイアウト切り替え（layoutクエリ対応）
+1. ✅ データモデル（Drizzle ORM schema）準備
+2. ✅ `/admin` での登壇者登録・順番管理
+3. ✅ `/screen` での「現在登壇者情報＋スライド静的表示」
+4. ✅ `/remote/[talkId]` と `slide_states` のポーリング同期（ページ送り）
+5. ✅ `/comment/[talkId]` と `comments` のポーリング同期（タイムライン）
+6. ✅ `/screen` のレイアウト切り替え（layoutクエリ対応）
