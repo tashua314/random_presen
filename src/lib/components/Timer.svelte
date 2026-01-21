@@ -79,11 +79,7 @@
 		if (running) return;
 		running = true;
 		timerInterval = setInterval(() => {
-			if (remaining > 0) {
-				remaining--;
-			} else {
-				stop();
-			}
+			remaining--;
 		}, 1000);
 	}
 
@@ -98,9 +94,12 @@
 	}
 
 	function formatTime(seconds: number) {
-		const m = Math.floor(seconds / 60);
-		const s = seconds % 60;
-		return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+		const isNegative = seconds < 0;
+		const abs = Math.abs(seconds);
+		const m = Math.floor(abs / 60);
+		const s = abs % 60;
+		const time = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+		return isNegative ? `-${time}` : time;
 	}
 
 	onDestroy(() => {
