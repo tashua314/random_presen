@@ -17,6 +17,7 @@
 
 	let slideState: SlideState = { talkId: '', currentPage: 1 };
 	let unsubscribeSlide: () => void;
+	let showQRModal = false;
 
 	const layoutClasses: Record<
 		LayoutOption,
@@ -73,12 +74,24 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		// QRモーダル表示トグル（b キー）
+		if (e.key === 'b' || e.key === 'B') {
+			if (currentTalk && commentUrl) {
+				showQRModal = !showQRModal;
+			}
+			return;
+		}
+
 		if (!currentTalk) return;
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
 			prevPage();
 		} else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
 			nextPage();
 		}
+	}
+
+	function closeQRModal() {
+		showQRModal = false;
 	}
 </script>
 
@@ -116,11 +129,19 @@
 			<div class="mt-4 border-t border-slate-700 pt-3">
 				<div class="mb-2 text-sm tracking-[0.1em] text-slate-400 uppercase">コメント投稿</div>
 				<div class="flex items-center gap-3">
-					<QRCode url={commentUrl} size={120} />
+					<button
+						type="button"
+						class="cursor-pointer rounded transition hover:opacity-80"
+						on:click={() => (showQRModal = true)}
+						aria-label="QRコードを拡大表示"
+					>
+						<QRCode url={commentUrl} size={120} />
+					</button>
 					<div class="flex-1 text-sm leading-relaxed text-slate-300">
 						スマホでスキャンして
 						<br />
 						コメントを投稿できます
+						<div class="mt-1 text-xs text-slate-500">クリックまたは[B]で拡大</div>
 					</div>
 				</div>
 			</div>
@@ -169,3 +190,30 @@
 		{/if}
 	</div>
 </div>
+
+<!-- QRコード拡大モーダル -->
+{#if showQRModal && commentUrl}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+		role="dialog"
+		aria-modal="true"
+		aria-label="QRコード拡大表示"
+		tabindex="-1"
+		on:click={closeQRModal}
+		on:keydown={(e) => e.key === 'Escape' && closeQRModal()}
+	>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="rounded-2xl bg-slate-800 p-8 shadow-2xl"
+			on:click|stopPropagation
+			on:keydown|stopPropagation
+		>
+			<QRCode url={commentUrl} size={400} />
+			<div class="mt-4 text-center text-slate-400">
+				<p class="text-lg">コメント投稿</p>
+				<p class="mt-2 text-sm text-slate-500">クリックまたは[B]で閉じる</p>
+			</div>
+		</div>
+	</div>
+{/if}
