@@ -18,9 +18,13 @@
 		return comments.filter((c) => new Date(c.createdAt) > clearedAt!);
 	});
 
+	let activeTalkId = '';
 	$effect(() => {
-		// Reset clearedAt when talkId changes (dependencies of this effect trigger re-run)
-		clearedAt = null;
+		// Only reset clearedAt if the talkId ACTUALLY changes
+		if (talkId !== activeTalkId) {
+			clearedAt = null;
+			activeTalkId = talkId;
+		}
 
 		const unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
 			comments = newComments;
