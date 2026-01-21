@@ -5,33 +5,33 @@
 	import type { Comment } from '$lib/services/types';
 	import { dataService } from '$lib/services';
 
-	let { talkId }: { talkId: string } = $props();
+	export let talkId: string;
 
-	let comments: Comment[] = $state([]);
-	let unsubscribe: (() => void) | undefined = $state(undefined);
-	let clearedAt: Date | null = $state(null);
+	let comments: Comment[] = [];
+	let unsubscribe: (() => void) | undefined;
+	let clearedAt: Date | null = null;
 
 	function clearComments() {
 		clearedAt = new Date();
 	}
 
 	// clearedAt以降のコメントのみ表示
-	let visibleComments = $derived.by(() => {
-		const threshold = clearedAt;
-		if (!threshold) return comments;
-		return comments.filter((c) => new Date(c.createdAt) > threshold);
-	});
+	$: visibleComments =
+		clearedAt === null
+			? comments
+			: comments.filter((c) => {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					return new Date(c.createdAt) > clearedAt!;
+				});
 
 	// Subscribe to comments for the given talkId
-	$effect(() => {
-		if (talkId) {
-			if (unsubscribe) unsubscribe();
-			clearedAt = null; // talkId変更時はクリア状態をリセット
-			unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
-				comments = newComments;
-			});
-		}
-	});
+	$: if (talkId) {
+		if (unsubscribe) unsubscribe();
+		clearedAt = null; // talkId変更時はクリア状態をリセット
+		unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
+			comments = newComments;
+		});
+	}
 
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
@@ -43,7 +43,7 @@
 		<span class="text-sm font-semibold text-slate-200">コメント</span>
 		<button
 			class="rounded bg-slate-600 px-2 py-0.5 text-xs text-slate-300 transition hover:bg-slate-500"
-			onclick={clearComments}
+			on:click={clearComments}
 		>
 			Clear
 		</button>
@@ -60,14 +60,14 @@
 				>
 					<div class="mb-1 flex items-center justify-between text-xs text-slate-400">
 						<span class="font-semibold text-slate-200">{comment.displayName}</span>
-						<span
-							>{new Date(comment.createdAt).toLocaleString('ja-JP', {
+						<span>
+							{new Date(comment.createdAt).toLocaleString('ja-JP', {
 								month: 'numeric',
 								day: 'numeric',
 								hour: '2-digit',
 								minute: '2-digit'
-							})}</span
-						>
+							})}
+						</span>
 					</div>
 					<div class="text-sm leading-relaxed text-slate-100">{comment.message}</div>
 				</div>

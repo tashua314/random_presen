@@ -4,7 +4,15 @@ import { eventStates, events } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
-	const state = await db.query.eventStates.findFirst();
+	let event = await db.query.events.findFirst();
+	if (!event) {
+		const [newEvent] = await db.insert(events).values({ name: 'LT Event' }).returning();
+		event = newEvent;
+	}
+
+	const state = await db.query.eventStates.findFirst({
+		where: eq(eventStates.eventId, event.id)
+	});
 	return json(state || { currentTalkId: null });
 }
 
