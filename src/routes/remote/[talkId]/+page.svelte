@@ -43,14 +43,20 @@
 
 	async function prevPage() {
 		if (slideState.currentPage > 1) {
-			await dataService.updateSlidePage(talkId, slideState.currentPage - 1);
+			const newPage = slideState.currentPage - 1;
+			// 楽観的更新: 即座にUIを更新
+			slideState = { ...slideState, currentPage: newPage };
+			// バックグラウンドでDB更新
+			dataService.updateSlidePage(talkId, newPage);
 		}
 	}
 
 	async function nextPage() {
-		// In a real app, we'd know max pages from PDF metadata.
-		// For mock, just increment.
-		await dataService.updateSlidePage(talkId, slideState.currentPage + 1);
+		const newPage = slideState.currentPage + 1;
+		// 楽観的更新: 即座にUIを更新
+		slideState = { ...slideState, currentPage: newPage };
+		// バックグラウンドでDB更新
+		dataService.updateSlidePage(talkId, newPage);
 	}
 </script>
 

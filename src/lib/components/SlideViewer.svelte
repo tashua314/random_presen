@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
@@ -13,6 +13,18 @@
 	let loading = false;
 	let error = '';
 
+	// ページキャッシュ: ページ番号 → ImageBitmap
+	const pageCache = new Map<number, ImageBitmap>();
+	// レンダリング中のページを追跡（重複レンダリング防止）
+	const renderingPages = new Set<number>();
+	// キャッシュの最大サイズ
+	const MAX_CACHE_SIZE = 20;
+	// 先読みするページ数（前後）
+	const PREFETCH_RANGE = 2;
+
+	let totalPages = 0;
+	let currentScale = 1.5;
+
 	onMount(async () => {
 		if (browser) {
 			pdfjsLib = await import('pdfjs-dist');
@@ -21,14 +33,28 @@
 		}
 	});
 
+	onDestroy(() => {
+		// キャッシュをクリーンアップ
+		for (const bitmap of pageCache.values()) {
+			bitmap.close();
+		}
+		pageCache.clear();
+	});
+
 	$: if (pdfjsLib && url) loadPdf(url);
-	$: if (pdfDoc && page) renderPage(page);
+	$: if (pdfDoc && page) displayPage(page);
 
 	async function loadPdf(pdfUrl: string) {
 		if (!pdfjsLib) return;
 		try {
 			loading = true;
 			error = '';
+
+			// 前のPDFのキャッシュをクリア
+			for (const bitmap of pageCache.values()) {
+				bitmap.close();
+			}
+			pageCache.clear();
 
 			// Use local proxy to bypass CORS and handle Drive links
 			const proxyUrl = `/api/proxy/pdf?url=${encodeURIComponent(pdfUrl)}`;
@@ -39,8 +65,10 @@
 				cMapPacked: true
 			});
 			pdfDoc = await loadingTask.promise;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			totalPages = (pdfDoc as any).numPages;
 			loading = false;
-			renderPage(page);
+			displayPage(page);
 		} catch (e: unknown) {
 			console.error('Error loading PDF:', e);
 			const message = e instanceof Error ? e.message : String(e);
@@ -49,25 +77,57 @@
 		}
 	}
 
-	async function renderPage(num: number) {
+	async function displayPage(num: number) {
 		if (!pdfDoc || !canvas) return;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if (renderTask && (renderTask as any).cancel) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			await (renderTask as any).cancel();
+
+		// キャッシュにあれば即座に表示
+		const cached = pageCache.get(num);
+		if (cached) {
+			drawBitmapToCanvas(cached);
+			// 先読みをバックグラウンドで実行
+			prefetchPages(num);
+			return;
 		}
 
+		// キャッシュにない場合はレンダリング
+		await renderAndCachePage(num, true);
+		// 先読みをバックグラウンドで実行
+		prefetchPages(num);
+	}
+
+	async function renderAndCachePage(num: number, displayImmediately: boolean) {
+		if (!pdfDoc) return;
+
+		// 既にレンダリング中なら待機しない
+		if (renderingPages.has(num)) return;
+
+		// ページ番号が範囲外
+		if (num < 1 || num > totalPages) return;
+
+		renderingPages.add(num);
+
 		try {
+			// 表示用のレンダリングはキャンセル可能にする
+			if (displayImmediately && renderTask) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				if ((renderTask as any).cancel) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					await (renderTask as any).cancel();
+				}
+			}
+
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const pageProxy = await (pdfDoc as any).getPage(num);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const viewport = (pageProxy as any).getViewport({ scale: 1.5 });
+			const viewport = (pageProxy as any).getViewport({ scale: currentScale });
 
-			canvas.height = viewport.height;
-			canvas.width = viewport.width;
-
-			const context = canvas.getContext('2d');
-			if (!context) return;
+			// オフスクリーンcanvasでレンダリング
+			const offscreen = new OffscreenCanvas(viewport.width, viewport.height);
+			const context = offscreen.getContext('2d');
+			if (!context) {
+				renderingPages.delete(num);
+				return;
+			}
 
 			const renderContext = {
 				canvasContext: context,
@@ -75,13 +135,74 @@
 			};
 
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			renderTask = (pageProxy as any).render(renderContext);
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			await (renderTask as any).promise;
+			const task = (pageProxy as any).render(renderContext);
+			if (displayImmediately) {
+				renderTask = task;
+			}
+
+			await task.promise;
+
+			// ImageBitmapを作成してキャッシュ
+			const bitmap = await createImageBitmap(offscreen);
+
+			// キャッシュサイズ制限
+			if (pageCache.size >= MAX_CACHE_SIZE) {
+				// 最も古いエントリを削除（現在のページから遠いものを優先）
+				const currentPage = page;
+				let farthestPage = -1;
+				let farthestDistance = -1;
+				for (const cachedPage of pageCache.keys()) {
+					const distance = Math.abs(cachedPage - currentPage);
+					if (distance > farthestDistance) {
+						farthestDistance = distance;
+						farthestPage = cachedPage;
+					}
+				}
+				if (farthestPage !== -1) {
+					const oldBitmap = pageCache.get(farthestPage);
+					if (oldBitmap) oldBitmap.close();
+					pageCache.delete(farthestPage);
+				}
+			}
+
+			pageCache.set(num, bitmap);
+
+			// 即座に表示する場合
+			if (displayImmediately && page === num) {
+				drawBitmapToCanvas(bitmap);
+			}
 		} catch (e: unknown) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			if ((e as any).name !== 'RenderingCancelledException') {
 				console.error('Error rendering page:', e);
+			}
+		} finally {
+			renderingPages.delete(num);
+		}
+	}
+
+	function drawBitmapToCanvas(bitmap: ImageBitmap) {
+		if (!canvas) return;
+		canvas.width = bitmap.width;
+		canvas.height = bitmap.height;
+		const context = canvas.getContext('2d');
+		if (context) {
+			context.drawImage(bitmap, 0, 0);
+		}
+	}
+
+	function prefetchPages(currentPage: number) {
+		// 前後のページを先読み
+		for (let i = 1; i <= PREFETCH_RANGE; i++) {
+			const nextPage = currentPage + i;
+			const prevPage = currentPage - i;
+
+			if (nextPage <= totalPages && !pageCache.has(nextPage)) {
+				// 非同期で先読み（displayImmediately = false）
+				renderAndCachePage(nextPage, false);
+			}
+			if (prevPage >= 1 && !pageCache.has(prevPage)) {
+				renderAndCachePage(prevPage, false);
 			}
 		}
 	}

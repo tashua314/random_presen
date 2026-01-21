@@ -63,13 +63,21 @@
 
 	async function prevPage() {
 		if (currentTalk && slideState.currentPage > 1) {
-			await dataService.updateSlidePage(currentTalk.id, slideState.currentPage - 1);
+			const newPage = slideState.currentPage - 1;
+			// 楽観的更新: 即座にUIを更新
+			slideState = { ...slideState, currentPage: newPage };
+			// バックグラウンドでDB更新
+			dataService.updateSlidePage(currentTalk.id, newPage);
 		}
 	}
 
 	async function nextPage() {
 		if (currentTalk) {
-			await dataService.updateSlidePage(currentTalk.id, slideState.currentPage + 1);
+			const newPage = slideState.currentPage + 1;
+			// 楽観的更新: 即座にUIを更新
+			slideState = { ...slideState, currentPage: newPage };
+			// バックグラウンドでDB更新
+			dataService.updateSlidePage(currentTalk.id, newPage);
 		}
 	}
 
