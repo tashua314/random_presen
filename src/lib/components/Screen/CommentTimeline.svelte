@@ -1,40 +1,34 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { Comment } from '$lib/services/types';
 	import { dataService } from '$lib/services';
 
-	export let talkId: string;
+	let { talkId }: { talkId: string } = $props();
 
-	let comments: Comment[] = [];
-	let unsubscribe: (() => void) | undefined;
-	let clearedAt: Date | null = null;
+	let comments: Comment[] = $state([]);
+	let clearedAt: Date | null = $state(null);
 
 	function clearComments() {
 		clearedAt = new Date();
 	}
 
-	// clearedAt以降のコメントのみ表示
-	$: visibleComments =
-		clearedAt === null
-			? comments
-			: comments.filter((c) => {
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					return new Date(c.createdAt) > clearedAt!;
-				});
+	let visibleComments = $derived.by(() => {
+		if (!clearedAt) return comments;
+		return comments.filter((c) => new Date(c.createdAt) > clearedAt!);
+	});
 
-	// Subscribe to comments for the given talkId
-	$: if (talkId) {
-		if (unsubscribe) unsubscribe();
-		clearedAt = null; // talkId変更時はクリア状態をリセット
-		unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
+	$effect(() => {
+		// Reset clearedAt when talkId changes (dependencies of this effect trigger re-run)
+		clearedAt = null;
+
+		const unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
 			comments = newComments;
 		});
-	}
 
-	onDestroy(() => {
-		if (unsubscribe) unsubscribe();
+		return () => {
+			unsubscribe();
+		};
 	});
 </script>
 
@@ -43,7 +37,7 @@
 		<span class="text-sm font-semibold text-slate-200">コメント</span>
 		<button
 			class="rounded bg-slate-600 px-2 py-0.5 text-xs text-slate-300 transition hover:bg-slate-500"
-			on:click={clearComments}
+			onclick={clearComments}
 		>
 			Clear
 		</button>
