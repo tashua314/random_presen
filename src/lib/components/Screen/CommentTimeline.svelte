@@ -5,21 +5,33 @@
 	import type { Comment } from '$lib/services/types';
 	import { dataService } from '$lib/services';
 
-	export let talkId: string;
+	let { talkId }: { talkId: string } = $props();
 
-	let comments: Comment[] = [];
-	let unsubscribe: () => void;
+	let comments: Comment[] = $state([]);
+	let unsubscribe: (() => void) | undefined = $state(undefined);
+	let clearedAt: Date | null = $state(null);
+
+	function clearComments() {
+		clearedAt = new Date();
+	}
+
+	// clearedAt以降のコメントのみ表示
+	let visibleComments = $derived.by(() => {
+		const threshold = clearedAt;
+		if (!threshold) return comments;
+		return comments.filter((c) => new Date(c.createdAt) > threshold);
+	});
 
 	// Subscribe to comments for the given talkId
-	$: if (talkId) {
-		if (unsubscribe) unsubscribe();
-		unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
-			// For mock, we just replace the list.
-			// In a real app with "INSERT" events, we might append.
-			// But here we get the full list.
-			comments = newComments;
-		});
-	}
+	$effect(() => {
+		if (talkId) {
+			if (unsubscribe) unsubscribe();
+			clearedAt = null; // talkId変更時はクリア状態をリセット
+			unsubscribe = dataService.subscribeToComments(talkId, (newComments) => {
+				comments = newComments;
+			});
+		}
+	});
 
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
@@ -27,12 +39,20 @@
 </script>
 
 <div class="flex h-full flex-col overflow-hidden rounded-lg bg-black/20">
-	<div class="bg-white/10 px-3 py-2 text-sm font-semibold text-slate-200">コメント</div>
+	<div class="flex items-center justify-between bg-white/10 px-3 py-2">
+		<span class="text-sm font-semibold text-slate-200">コメント</span>
+		<button
+			class="rounded bg-slate-600 px-2 py-0.5 text-xs text-slate-300 transition hover:bg-slate-500"
+			onclick={clearComments}
+		>
+			Clear
+		</button>
+	</div>
 	<div class="flex flex-1 flex-col-reverse gap-2 overflow-y-auto p-3">
-		{#if comments.length === 0}
+		{#if visibleComments.length === 0}
 			<div class="mt-4 text-center text-sm text-slate-500">まだコメントはありません</div>
 		{:else}
-			{#each comments as comment (comment.id)}
+			{#each visibleComments as comment (comment.id)}
 				<div
 					class="rounded-md border-l-4 border-sky-400 bg-white/5 px-3 py-2"
 					transition:fly={{ y: 20, duration: 300 }}
