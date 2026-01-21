@@ -40,7 +40,14 @@
 				>
 					<div class="mb-1 flex items-center justify-between text-xs text-slate-400">
 						<span class="font-semibold text-slate-200">{comment.displayName}</span>
-						<span>{new Date(comment.createdAt).toLocaleTimeString()}</span>
+						<span
+							>{new Date(comment.createdAt).toLocaleString('ja-JP', {
+								month: 'numeric',
+								day: 'numeric',
+								hour: '2-digit',
+								minute: '2-digit'
+							})}</span
+						>
 					</div>
 					<div class="text-sm leading-relaxed text-slate-100">{comment.message}</div>
 				</div>
