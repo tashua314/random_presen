@@ -106,5 +106,29 @@
 				</div>
 			{/if}
 		</main>
+
+		<footer class="mt-12 flex w-full max-w-md flex-col gap-4 border-t border-slate-800 pt-8">
+			<p class="text-center text-xs tracking-wider text-slate-500 uppercase">Stay Connected</p>
+			<div class="grid grid-cols-2 gap-4">
+				<a
+					href="https://techguide-llc.notion.site/tg-profile?source=copy_link"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 py-4 transition hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-800 hover:shadow-lg hover:shadow-sky-900/10"
+				>
+					<span class="font-bold text-slate-200 group-hover:text-sky-400">Profile</span>
+					<span class="text-xs text-slate-500">活動実績・経歴</span>
+				</a>
+				<a
+					href="https://x.com/tashua314"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 py-4 transition hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-800 hover:shadow-lg hover:shadow-sky-900/10"
+				>
+					<span class="font-bold text-slate-200 group-hover:text-sky-400">X (Twitter)</span>
+					<span class="text-xs text-slate-500">最新情報・発信</span>
+				</a>
+			</div>
+		</footer>
 	{/if}
 </div>
