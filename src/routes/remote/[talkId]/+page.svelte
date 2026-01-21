@@ -11,6 +11,9 @@
 	let error = '';
 
 	let unsubscribeSlide: () => void;
+	// 楽観的更新後、ポーリングからの古い値を無視するためのタイムスタンプ
+	let lastOptimisticUpdate = 0;
+	const OPTIMISTIC_UPDATE_GRACE_PERIOD = 2000; // 2秒間はポーリング更新を無視
 
 	$: talkId = $page.params.talkId ?? '';
 
@@ -27,6 +30,10 @@
 
 			slideState = await dataService.getSlideState(talkId);
 			unsubscribeSlide = dataService.subscribeToSlideState(talkId, (state) => {
+				// 楽観的更新後の猶予期間中はポーリング更新を無視
+				if (Date.now() - lastOptimisticUpdate < OPTIMISTIC_UPDATE_GRACE_PERIOD) {
+					return;
+				}
 				slideState = state;
 			});
 			loading = false;
@@ -45,6 +52,7 @@
 		if (slideState.currentPage > 1) {
 			const newPage = slideState.currentPage - 1;
 			// 楽観的更新: 即座にUIを更新
+			lastOptimisticUpdate = Date.now();
 			slideState = { ...slideState, currentPage: newPage };
 			// バックグラウンドでDB更新
 			dataService.updateSlidePage(talkId, newPage);
@@ -54,6 +62,7 @@
 	async function nextPage() {
 		const newPage = slideState.currentPage + 1;
 		// 楽観的更新: 即座にUIを更新
+		lastOptimisticUpdate = Date.now();
 		slideState = { ...slideState, currentPage: newPage };
 		// バックグラウンドでDB更新
 		dataService.updateSlidePage(talkId, newPage);

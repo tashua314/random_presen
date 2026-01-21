@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 	export let url: string;
@@ -14,9 +15,9 @@
 	let error = '';
 
 	// ページキャッシュ: ページ番号 → ImageBitmap
-	const pageCache = new Map<number, ImageBitmap>();
+	const pageCache = new SvelteMap<number, ImageBitmap>();
 	// レンダリング中のページを追跡（重複レンダリング防止）
-	const renderingPages = new Set<number>();
+	const renderingPages = new SvelteSet<number>();
 	// キャッシュの最大サイズ
 	const MAX_CACHE_SIZE = 20;
 	// 先読みするページ数（前後）
